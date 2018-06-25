@@ -503,6 +503,23 @@
     <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_LockmassRefiner.cpp" />
     <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_LockmassRefinerTest.cpp" />
     <ClCompile Include="pwiz_aux\msrc\utility\vendor_api\Bruker\TimsData.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\CubicHermiteSpline.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\CubicHermiteSplineTest.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxDebugReader.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxDebugReadWriteTest.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxDebugWriter.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxHelpers.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxHelpersTest.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxSolver.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxSolverTest.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\FSDemux.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\MatrixIO.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\MatrixIOTest.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\MSXDemultiplexer.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\OverlapDemultiplexer.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\PrecursorMaskCodec.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\SpectrumPeakExtractor.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\SpectrumPeakExtractorTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\boost_aux\boost\nowide\args.hpp" />
@@ -895,5 +912,20 @@
     <ClInclude Include="pwiz\analysis\spectrum_processing\SpectrumList_ScanSummer.hpp" />
     <ClInclude Include="pwiz\analysis\spectrum_processing\SpectrumList_LockmassRefiner.hpp" />
     <ClInclude Include="pwiz_aux\msrc\utility\vendor_api\Bruker\TimsData.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\CubicHermiteSpline.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\DemuxDebugReader.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\DemuxDebugWriter.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\DemuxHelpers.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\DemuxSolver.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\DemuxTypes.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\EnumConstantNotPresentException.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\IDemultiplexer.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\IInterpolation.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\IPrecursorMaskCodec.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\MatrixIO.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\MSXDemultiplexer.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\OverlapDemultiplexer.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\PrecursorMaskCodec.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\SpectrumPeakExtractor.hpp" />
   </ItemGroup>
 </Project>
