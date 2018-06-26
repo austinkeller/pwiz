@@ -797,15 +797,19 @@ SpectrumListPtr filterCreator_demux(const MSData& msd, const string& carg, pwiz:
 {
     string arg = carg;
 
+    const SpectrumList_Demux::Params k_defaultDemuxParams;
     SpectrumList_Demux::Params demuxParams;
-    demuxParams.massError = parseKeyValuePair<MZTolerance>(arg, "massError=", MZTolerance(10, MZTolerance::PPM));
-    demuxParams.nnlsMaxIter = (int) parseKeyValuePair<unsigned int>(arg, "nnlsMaxIter=", 50);
-    demuxParams.nnlsEps = parseKeyValuePair<double>(arg, "nnlsEps=", 1e-10);
-    demuxParams.applyWeighting = !parseKeyValuePair<bool>(arg, "noWeighting=", false);
-    demuxParams.demuxBlockExtra = parseKeyValuePair<double>(arg, "demuxBlockExtra=", 0);
-    demuxParams.variableFill = parseKeyValuePair<bool>(arg, "variableFill=", false);
-    demuxParams.regularizeSums = !parseKeyValuePair<bool>(arg, "noSumNormalize=", false);
+    demuxParams.massError = parseKeyValuePair<MZTolerance>(arg, "massError=", k_defaultDemuxParams.massError);
+    demuxParams.nnlsMaxIter = (int)parseKeyValuePair<unsigned int>(arg, "nnlsMaxIter=", k_defaultDemuxParams.nnlsMaxIter);
+    demuxParams.nnlsEps = parseKeyValuePair<double>(arg, "nnlsEps=", k_defaultDemuxParams.nnlsEps);
+    demuxParams.applyWeighting = !parseKeyValuePair<bool>(arg, "noWeighting=", k_defaultDemuxParams.applyWeighting);
+    demuxParams.demuxBlockExtra = parseKeyValuePair<double>(arg, "demuxBlockExtra=", k_defaultDemuxParams.demuxBlockExtra);
+    demuxParams.variableFill = parseKeyValuePair<bool>(arg, "variableFill=", k_defaultDemuxParams.variableFill);
+    demuxParams.regularizeSums = !parseKeyValuePair<bool>(arg, "noSumNormalize=", !k_defaultDemuxParams.regularizeSums);
     string optimization = parseKeyValuePair<string>(arg, "optimization=", "none");
+    demuxParams.interpolateRetentionTime = parseKeyValuePair<bool>(arg, "interpolateRT=", k_defaultDemuxParams.interpolateRetentionTime);
+    demuxParams.threadLimit = parseKeyValuePair<unsigned int>(arg, "threadLimit=", k_defaultDemuxParams.threadLimit);
+    demuxParams.useMultithreading = parseKeyValuePair<bool>(arg, "useMultithreading=", k_defaultDemuxParams.useMultithreading);
     bal::trim(arg);
     if (!arg.empty())
         throw runtime_error("[demultiplex] unhandled text remaining in argument string: \"" + arg + "\"");
@@ -822,7 +826,7 @@ SpectrumListPtr filterCreator_demux(const MSData& msd, const string& carg, pwiz:
 
     return SpectrumListPtr(new SpectrumList_Demux(msd.run.spectrumListPtr, demuxParams));
 }
-UsageInfo usage_demux = { "massError=<tolerance and units, eg 0.5Da (default 10ppm)> nnlsMaxIter=<int (50)> nnlsEps=<real (1e-10)> noWeighting=<bool (false)> demuxBlockExtra=<real (0)> variableFill=<bool (false)> noSumNormalize=<bool (false)> optimization=<(none)|overlap_only>",
+UsageInfo usage_demux = { "massError=<tolerance and units, eg 0.5Da (default 10ppm)> nnlsMaxIter=<int (50)> nnlsEps=<real (1e-10)> noWeighting=<bool (false)> demuxBlockExtra=<real (0)> variableFill=<bool (false)> noSumNormalize=<bool (false)> optimization=<(none)|overlap_only> interpolateRT=<bool (true)>",
     "Separates overlapping or MSX multiplexed spectra into several demultiplexed spectra by inferring from adjacent multiplexed spectra. Optionally handles variable fill times (for Thermo)." };
 
 SpectrumListPtr filterCreator_precursorRefine(const MSData& msd, const string& arg, pwiz::util::IterationListenerRegistry* ilr)

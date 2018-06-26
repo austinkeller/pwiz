@@ -24,6 +24,8 @@
 #include "pwiz/utility/misc/Std.hpp"
 #include "pwiz/data/msdata/SpectrumWorkerThreads.hpp"
 #include "pwiz/data/msdata/SpectrumListWrapper.hpp"
+#include "pwiz/analysis/spectrum_processing/SpectrumList_Demux.hpp"
+#include "pwiz/analysis/demux/DemuxDataProcessingStrings.hpp"
 #include "pwiz/utility/misc/mru_list.hpp"
 #include <boost/thread.hpp>
 #include <deque>
@@ -31,10 +33,36 @@
 
 using std::deque;
 using namespace pwiz::util;
-
+using namespace pwiz::analysis;
 
 namespace pwiz {
 namespace msdata {
+
+template <typename T>
+static const T* UnwrapSpectrumList(const SpectrumList* sl)
+{
+    const T* slUnwrappedPtr = dynamic_cast<const T*>(sl);
+    if (slUnwrappedPtr)
+    {
+        auto slWrapperPtr = dynamic_cast<const SpectrumListWrapper*>(sl);
+        while (true)
+        {
+            if (slWrapperPtr)
+            {
+                slUnwrappedPtr = dynamic_cast<const T*>(slWrapperPtr->inner().get());
+                if (slUnwrappedPtr)
+                    break;
+                else
+                {
+                    slWrapperPtr = dynamic_cast<const SpectrumListWrapper*>(slWrapperPtr->inner().get());
+                }
+            }
+            else
+                break;
+        }
+    }
+    return slUnwrappedPtr;
+}
 
 class SpectrumWorkerThreads::Impl
 {
@@ -57,6 +85,7 @@ class SpectrumWorkerThreads::Impl
         bool isBruker = icPtr.get() && icPtr->hasCVParamChild(MS_Bruker_Daltonics_instrument_model);
 
         bool isDemultiplexed = false;
+        bool useMultithreading = false;
         const boost::shared_ptr<const DataProcessing> dp = sl.dataProcessingPtr();
         if (dp)
         {
@@ -65,9 +94,13 @@ class SpectrumWorkerThreads::Impl
                 if (!pm.hasCVParam(MS_data_processing)) continue;
                 BOOST_FOREACH(const UserParam& up, pm.userParams)
                 {
-                    if (up.name.find("Demultiplexing") != std::string::npos)
+                    if (up.name.find(DemuxDataProcessingStrings::kDEMUX_NAME) != std::string::npos)
                     {
                         isDemultiplexed = true;
+                        if (up.name.find(DemuxDataProcessingStrings::kDEMUX_THREADING_NAME) != std::string::npos)
+                        {
+                            useMultithreading = true;
+                        }
                         break;
                     }
                 }
@@ -75,7 +108,8 @@ class SpectrumWorkerThreads::Impl
             }
         }
 
-        useThreads_ = !(isBruker || isDemultiplexed); // Bruker library is not thread-friendly
+        useThreads_ = !(isBruker || (isDemultiplexed && !useMultithreading)); // Bruker library is not thread-friendly
+        //useThreads_ = !(isBruker); // Bruker library is not thread-friendly
 
         if (sl.size() > 0 && useThreads_)
         {

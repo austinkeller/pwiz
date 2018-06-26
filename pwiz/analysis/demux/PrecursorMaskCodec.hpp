@@ -33,10 +33,23 @@ namespace analysis{
     {
     public:
         
+        struct Params
+        {
+            Params() :
+            variableFill(false),
+            useMultithreading(true) {}
+
+            /// Whether this data acquired with variable fill times or not.
+            bool variableFill;
+
+
+            bool useMultithreading;
+        };
+
         /// Construct a PrecursorMaskCodec for interpreting overlapping and MSX experiments for demultiplexing.
         /// @param[in] slPtr SpectrumList to demux
         /// @param[in] variableFill Set to true if fill times are allowed to vary for each scan window
-        explicit PrecursorMaskCodec(msdata::SpectrumList_const_ptr slPtr, bool variableFill = false);
+        explicit PrecursorMaskCodec(msdata::SpectrumList_const_ptr slPtr, Params p = Params());
         virtual ~PrecursorMaskCodec(){}
 
         /// \name IPrecursorMaskCodec interface
@@ -118,8 +131,7 @@ namespace analysis{
         /// ReadDemuxScheme() and assumed to be constant for all spectra. An error is thrown if this is ever observed to change.
         size_t overlapsPerSpectrum_;
         
-        /// Whether this data acquired with variable fill times or not. This is set by the user.
-        bool variableFill_;
+        Params params_;
         
         /// Cached processing method to return from GetProcessingMethod()
         msdata::ProcessingMethod processingMethod_;

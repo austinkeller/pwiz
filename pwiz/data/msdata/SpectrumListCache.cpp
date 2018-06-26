@@ -28,7 +28,6 @@
 
 namespace pwiz {
 namespace msdata {
-    
 
 PWIZ_API_DECL SpectrumListCache::SpectrumListCache(const SpectrumListPtr& inner,
                                                    MemoryMRUCacheMode cacheMode,

@@ -19,6 +19,9 @@
 
 #ifndef _SPECTRUMLIST_DEMUX_HPP
 #define _SPECTRUMLIST_DEMUX_HPP
+//#ifndef _PROFILE_PERFORMANCE
+//#define _PROFILE_PERFORMANCE
+//#endif
 
 #include "pwiz/data/msdata/SpectrumListWrapper.hpp"
 #include <boost/smart_ptr/scoped_ptr.hpp>
@@ -60,7 +63,10 @@ namespace analysis {
                 applyWeighting(true),
                 regularizeSums(true),
                 variableFill(false),
-                optimization(Optimization::NONE)
+                interpolateRetentionTime(true),
+                optimization(Optimization::NONE),
+                useMultithreading(true),
+                threadLimit(0)
 
             {}
 
@@ -80,7 +86,7 @@ namespace analysis {
             double nnlsEps;
             
             /// Weight the spectra nearby to the input spectrum more heavily in the solve
-            /// than the outer ones
+            /// than the outer ones. This is only applied if interpolateRetentionTime is false
             bool applyWeighting;
             
             /// After demux solve, scale the sum of the intensities contributed form each
@@ -89,9 +95,15 @@ namespace analysis {
             
             /// Set to true if fill times are allowed to vary for each scan window
             bool variableFill;
-            
+
+            bool interpolateRetentionTime;
+
             /// Optimizations can be chosen when experimental design is known
             Optimization optimization;
+
+            bool useMultithreading;
+
+            unsigned int threadLimit;
         };
 
         /// Generates an abstract SpectrumList_Demux decorator from inner SpectrumList

@@ -65,7 +65,7 @@ namespace analysis {
         void BuildDeconvBlock(size_t index,
             const std::vector<size_t>& muxIndices,
             DemuxTypes::MatrixPtr& masks,
-            DemuxTypes::MatrixPtr& signal) override;
+            DemuxTypes::MatrixPtr& signal) const override;
         void GetMatrixBlockIndices(size_t indexToDemux, std::vector<size_t>& muxIndices, double demuxBlockExtra) const override;
         const std::vector<size_t>& SpectrumIndices() const override;
         ///@}
@@ -82,7 +82,7 @@ namespace analysis {
         Params params_;
 
         /// A cache of the indices provided by SpectrumIndices()
-        std::vector<size_t> spectrumIndices_;
+        mutable std::vector<size_t> spectrumIndices_;
     };
 } // namespace analysis
 } // namespace pwiz

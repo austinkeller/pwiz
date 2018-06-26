@@ -112,6 +112,7 @@ void run(int argc, char ** argv)
     demuxParams.regularizeSums = !vm["noSumNormalize"].as<bool>();
     demuxParams.optimization = SpectrumList_Demux::Params::stringToOptimization(vm["optimization"].as<Optimization>().value);
     demuxParams.padScanTimes = vm["padScanTimes"].as<bool>();
+    demuxParams.interpolateRetentionTime = vm["interpolateRT"].as<bool>();
     bool skipCentroiding = vm["skipCentroiding"].as<bool>();
 
     FullReaderList readers;
@@ -173,6 +174,8 @@ po::variables_map parseCommandLine(int argc, char **argv)
         "Use optimizations. Available optimizations are \"none\", and \"overlap_only\"" )
         ("padScanTimes", po::bool_switch()->default_value(demuxParams.padScanTimes),
         "Pad scan times with small increment to prevent simultaneous spectra (which some software cannot handle)")
+        ("interpolateRT", po::bool_switch()->default_value(demuxParams.interpolateRetentionTime),
+        "Interpolate retention times. This only applies when overlap demultiplexing with no MSX (overlap only)")
         ("skipCentroiding", po::bool_switch()->default_value(skipCentroiding),
         "Set to true to use profile data if available")
         ("inputfile", po::value<string>()->required(),

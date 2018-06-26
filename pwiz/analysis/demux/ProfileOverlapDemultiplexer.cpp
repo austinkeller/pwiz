@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id: OverlapDemultiplexer.cpp 10448 2017-02-08 00:54:50Z atkeller $
 //
 //
 // Original author: Jarrett Egertson <jegertso .@. uw.edu>
@@ -17,8 +17,7 @@
 // limitations under the License.
 //
 
-#include "OverlapDemultiplexer.hpp"
-#include "SpectrumPeakExtractor.hpp"
+#include "ProfileOverlapDemultiplexer.hpp"
 #include "IInterpolation.hpp"
 #include "DemuxHelpers.hpp"
 #include "CubicHermiteSpline.hpp"
@@ -40,18 +39,18 @@ namespace analysis {
     using namespace chrono;
 #endif
 
-    OverlapDemultiplexer::OverlapDemultiplexer(Params p) :
+    ProfileOverlapDemultiplexer::ProfileOverlapDemultiplexer(Params p) :
         params_(p)
     {
         overlapRegionsInApprox_ = 7;
         cyclesInBlock_ = 3;
     }
 
-    OverlapDemultiplexer::~OverlapDemultiplexer()
+    ProfileOverlapDemultiplexer::~ProfileOverlapDemultiplexer()
     {
     }
 
-    void OverlapDemultiplexer::Initialize(SpectrumList_const_ptr sl, IPrecursorMaskCodec::const_ptr pmc)
+    void ProfileOverlapDemultiplexer::Initialize(SpectrumList_const_ptr sl, IPrecursorMaskCodec::const_ptr pmc)
     {
         assert(sl);
         assert(pmc);
@@ -61,15 +60,15 @@ namespace analysis {
         pmc_ = pmc;
     }
 
-    void OverlapDemultiplexer::BuildDeconvBlock(size_t index, const vector<size_t>& muxIndices, MatrixPtr& masks, MatrixPtr& signal) const
+    void ProfileOverlapDemultiplexer::BuildDeconvBlock(size_t index, const vector<size_t>& muxIndices, MatrixPtr& masks, MatrixPtr& signal)
     {
 #ifdef _PROFILE_PERFORMANCE
         auto t1 = high_resolution_clock::now();
 #endif
-        //assert(sl_);
-        //assert(pmc_);
+        assert(sl_);
+        assert(pmc_);
         if (!sl_ || !pmc_)
-            throw runtime_error("BuildDeconvBlock() Null pointer to SpectrumList and/or IPrecursorMaskCodec. MSXDemultiplexer may not have been initialized.");
+            throw runtime_error(__FUNCTION__ " Null pointer to SpectrumList and/or IPrecursorMaskCodec. MSXDemultiplexer may not have been initialized.");
 
         // get the list of peaks to demultiplex
         Spectrum_const_ptr deconvSpectrum = sl_->spectrum(index, true);
@@ -111,7 +110,7 @@ namespace analysis {
         }
 
         // Sort by distances from spectrum of interest in m/z space
-        sort(demuxWindowDistances.begin(), demuxWindowDistances.end(), [](const pair<double, size_t>& left, const pair<double, size_t>& right)
+        sort(demuxWindowDistances.begin(), demuxWindowDistances.end(), [](pair<double, size_t>& left, pair<double, size_t>& right)
         {
             return abs(left.first) < abs(right.first) && abs(abs(left.first) - abs(right.first)) > 10e-4;
         });
@@ -121,7 +120,7 @@ namespace analysis {
         bestMaskAverages.reserve(overlapRegionsInApprox_);
         copy(demuxWindowDistances.begin(), demuxWindowDistances.begin() + overlapRegionsInApprox_, back_inserter(bestMaskAverages));
 
-        sort(bestMaskAverages.begin(), bestMaskAverages.end(), [](const pair<double, size_t>& left, const pair<double, size_t>& right)
+        sort(bestMaskAverages.begin(), bestMaskAverages.end(), [](pair<double, size_t>& left, pair<double, size_t>& right)
         {
             return left.first < right.first && abs(left.first - right.first) > 10e-4;
         });
@@ -143,28 +142,29 @@ namespace analysis {
             masks->row(matrixRow) = fullMaskRow.segment(lowerMZBound, numDemuxSpectra);
         }
 
-#ifdef _PROFILE_PERFORMANCE
-        // add function to be timed here
-        auto t2 = high_resolution_clock::now();
-        auto duration = duration_cast<microseconds >(t2 - t1).count();
-        std::cout << "BuildDeconvBlock (First half): " << duration << endl;
-#endif
-
         // Fill signal
         if (params_.interpolateRetentionTime)
         {
-#ifdef _PROFILE_PERFORMANCE
-            t1 = high_resolution_clock::now();
-#endif
 
             // Get retention time for scan to be deconvolved
             double deconvStartTime;
             if (!TryGetStartTime(*deconvSpectrum, deconvStartTime))
-                throw runtime_error("BuildDeconvBlock() Tried to process an MS2 scan without retention times written.");
+                throw runtime_error(__FUNCTION__ " Tried to process an MS2 scan without retention times written.");
 
             // Cache the data that will be used for interpolation
             vector<MatrixPtr> binnedIntensitiesCache;
             vector<boost::shared_ptr<VectorXd> > scanTimesCache;
+
+#ifdef _PROFILE_PERFORMANCE
+            // add function to be timed here
+            auto t2 = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds >(t2 - t1).count();
+            std::cout << "BuildDeconvBlock (First half): " << duration << endl;
+#endif
+
+#ifdef _PROFILE_PERFORMANCE
+            t1 = high_resolution_clock::now();
+#endif
 
             // Loop through the scans and cache intensity and time data for interpolation
             for (size_t matrixRow = 0; matrixRow < scansInDeconv.size(); ++matrixRow)
@@ -179,7 +179,7 @@ namespace analysis {
                 // add function to be timed here
                 auto t2_matrixRow = high_resolution_clock::now();
                 duration = duration_cast<microseconds >(t2_matrixRow - t1_matrixRow).count();
-                cout << "BuildDeconvBlock (Allocate matrices): " << duration << endl;
+                std::cout << "BuildDeconvBlock (Allocate matrices): " << duration << endl;
 #endif
 
 #ifdef _PROFILE_PERFORMANCE
@@ -189,13 +189,13 @@ namespace analysis {
                 auto scan = scansInDeconv[matrixRow];
                 vector<size_t> interpolationSpectraIndices;
                 if (!FindNearbySpectra(interpolationSpectraIndices, sl_, scan, cyclesInBlock_, specPerCycle))
-                    throw runtime_error("BuildDeconvBlock() Not enough spectra to interpolate for the overlap.");
+                    throw runtime_error(__FUNCTION__ " Not enough spectra to interpolate for the overlap.");
 
 #ifdef _PROFILE_PERFORMANCE
                 // add function to be timed here
                 t2_matrixRow = high_resolution_clock::now();
                 duration = duration_cast<microseconds >(t2_matrixRow - t1_matrixRow).count();
-                cout << "BuildDeconvBlock (Find scans around the spectrum to use for interpolation): " << duration << endl;
+                std::cout << "BuildDeconvBlock (Find scans around the spectrum to use for interpolation): " << duration << endl;
 #endif
 
 #ifdef _PROFILE_PERFORMANCE
@@ -209,7 +209,7 @@ namespace analysis {
 
                     double startTime;
                     if (!TryGetStartTime(*currentSpectrum, startTime))
-                        throw runtime_error("BuildDeconvBlock() Tried to process an MS2 scan without retention times written.");
+                        throw runtime_error(__FUNCTION__ " Tried to process an MS2 scan without retention times written.");
 
                     // Record scan time
                     (*scanTimesCache.back())[i] = startTime;
@@ -268,34 +268,15 @@ namespace analysis {
                 }
             }
 #endif
+#ifdef _PROFILE_PERFORMANCE
+            t1 = high_resolution_clock::now();
+#endif
         }
         else
         {
-            int specPerCycle = pmc_->GetSpectraPerCycle();
-            for (int matrixRow = 0; matrixRow < scansInDeconv.size(); ++matrixRow)
-            {
-                size_t currentIndex = scansInDeconv[matrixRow];
-                Spectrum_const_ptr s = sl_->spectrum(currentIndex, true);
-                DemuxScalar weight = 1.0;
-                if (params_.applyWeighting)
-                {
-                    /* This method of weighting tries to minimize the added variance from changing intensity during
-                    * chromatogram elution. Given a point on the elution peak, one can model the change in intensity as a
-                    * function of difference in retention time. By modeling this function for all possible points on the
-                    * peak it is possible to find a best fit weighting scheme that minimizes intensity variance. To
-                    * describe the model itself in more detail, ScanDiff contains the difference in retention time and
-                    * 5 / specPerCycle contains information about the typical peak width (or standard deviation).
-                    */
-                    int scanDiff = int(index) - int(currentIndex);
-                    weight = 1.0 / (1.0 + pow(5.0 * scanDiff / specPerCycle, 2));
-                }
-                peakExtractor(s, *signal, matrixRow, weight);
-            }
+            // TODO
+            throw logic_error("Bypassing interpolation is not implemented! Contact atkeller@uw.edu to report this issue.");
         }
-
-#ifdef _PROFILE_PERFORMANCE
-        t1 = high_resolution_clock::now();
-#endif
 
         // Cache the indices for the spectrum
         spectrumIndices_.clear();
@@ -304,7 +285,6 @@ namespace analysis {
             assert(demuxIndex >= lowerMZBound);
             spectrumIndices_.push_back(demuxIndex - lowerMZBound);
         }
-
 #ifdef _PROFILE_PERFORMANCE
         // add function to be timed here
         t2 = high_resolution_clock::now();
@@ -313,27 +293,27 @@ namespace analysis {
 #endif
     }
 
-    void OverlapDemultiplexer::GetMatrixBlockIndices(size_t indexToDemux, std::vector<size_t>& muxIndices, double demuxBlockExtra) const
+    void ProfileOverlapDemultiplexer::GetMatrixBlockIndices(size_t indexToDemux, std::vector<size_t>& muxIndices, double demuxBlockExtra) const
     {
         demuxBlockExtra = max(0.0, demuxBlockExtra);
         auto numSpectraToFind = pmc_->GetSpectraPerCycle() + size_t(round(demuxBlockExtra * pmc_->GetSpectraPerCycle()));
         if (!FindNearbySpectra(muxIndices, sl_, indexToDemux, numSpectraToFind))
-            throw runtime_error("GetMatrixBlockIndices() Not enough spectra to demultiplex this block");
+            throw runtime_error(__FUNCTION__ " Not enough spectra to demultiplex this block");
     }
 
-    const std::vector<size_t>& OverlapDemultiplexer::SpectrumIndices() const
+    const std::vector<size_t>& ProfileOverlapDemultiplexer::SpectrumIndices() const
     {
         return spectrumIndices_;
     }
 
-    void OverlapDemultiplexer::InterpolateMuxRegion(Ref<MatrixXd, 0, Stride<Dynamic, Dynamic> > interpolatedIntensities, double timeToInterpolate,
+    void ProfileOverlapDemultiplexer::InterpolateMuxRegion(Ref<MatrixXd, 0, Stride<Dynamic, Dynamic> > interpolatedIntensities, double timeToInterpolate,
         Eigen::Ref<const Eigen::MatrixXd> intensities, Ref<const VectorXd> scanTimes)
     {
         if (interpolatedIntensities.cols() != 1 && interpolatedIntensities.rows() != 1)
-            throw runtime_error("InterpolateMuxRegion() Output block is not a vector type");
+            throw runtime_error(__FUNCTION__ " Output block is not a vector type");
 
         if (interpolatedIntensities.size() != intensities.cols())
-            throw runtime_error("InterpolateMuxRegion() Output block does not have the expected size");
+            throw runtime_error(__FUNCTION__ " Output block does not have the expected size");
 
         //TODO parallelize this
         auto numTransitions = static_cast<size_t>(intensities.cols());
@@ -344,7 +324,7 @@ namespace analysis {
         }
     }
 
-    double OverlapDemultiplexer::InterpolateMatrix(double pointToInterpolate, Eigen::Ref<const Eigen::VectorXd> points, Eigen::Ref<const Eigen::VectorXd> values)
+    double ProfileOverlapDemultiplexer::InterpolateMatrix(double pointToInterpolate, Eigen::Ref<const Eigen::VectorXd> points, Eigen::Ref<const Eigen::VectorXd> values)
     {
         boost::shared_ptr<IInterpolation> interpolator = boost::make_shared<CubicHermiteSpline>(points, values);
         return interpolator->Interpolate(pointToInterpolate);

@@ -22,6 +22,8 @@
 project
     : requirements 
         <toolset>msvc,<link>shared:<define>PWIZ_DYN_LINK
+        #<define>_PROFILE_PERFORMANCE
+        #<define>_PROFILE_SOLVER_CONVERGENCE
     ;
     
 

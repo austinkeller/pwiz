@@ -69,6 +69,7 @@ lib pwiz_data_msdata
         SpectrumList_BTDX.cpp
         [ mz5-build SpectrumList_mz5.cpp ]
         SpectrumListCache.cpp
+        SpectrumListThreadsafe.cpp
         RAMPAdapter.cpp
         Reader.cpp
         References.cpp
@@ -77,7 +78,7 @@ lib pwiz_data_msdata
         <library>pwiz_data_msdata_version
         <library>../common//pwiz_data_common
         <library>../..//pwiz_version
-		<library>../../utility/misc//pwiz_utility_misc
+        <library>../../utility/misc//pwiz_utility_misc
         <library>../../utility/minimxml//pwiz_utility_minimxml
         <library>../../utility/chemistry//pwiz_utility_chemistry
         <library>/ext/boost//iostreams/<boost-iostreams-zlib>on

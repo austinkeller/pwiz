@@ -18,6 +18,7 @@
 //
 
 #include "PrecursorMaskCodec.hpp"
+#include "DemuxDataProcessingStrings.hpp"
 
 namespace pwiz{
 namespace analysis{
@@ -25,16 +26,20 @@ namespace analysis{
     using namespace msdata;
     using namespace Eigen;
 
-    PrecursorMaskCodec::PrecursorMaskCodec(SpectrumList_const_ptr slPtr, bool variableFill)
+    PrecursorMaskCodec::PrecursorMaskCodec(SpectrumList_const_ptr slPtr, Params p)
         : spectraPerCycle_(0),
         precursorsPerSpectrum_(0),
         overlapsPerSpectrum_(0),
-        variableFill_(variableFill),
+        params_(p),
         processingMethod_()
     {
         ReadDemuxScheme(slPtr);
         processingMethod_.set(MS_data_processing);
-        processingMethod_.userParams.push_back(UserParam("PRISM " + DemuxTypes::kDEMUX_NAME));
+        stringstream processingString;
+        processingString << "PRISM " << DemuxDataProcessingStrings::kDEMUX_NAME;
+        if (params_.useMultithreading)
+            processingString << " " << DemuxDataProcessingStrings::kDEMUX_THREADING_NAME;
+        processingMethod_.userParams.push_back(UserParam(processingString.str()));
     }
 
     template <typename T>
@@ -42,7 +47,7 @@ namespace analysis{
     {
         vector<size_t> indices;
         SpectrumToIndices(sPtr, indices);
-        if (variableFill_)
+        if (params_.variableFill)
         {
             vector<DemuxWindow> demuxWindows;
             for (auto i : indices)
