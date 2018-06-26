@@ -36,7 +36,6 @@
 #include "pwiz/analysis/demux/DemuxTypes.hpp"
 #include "pwiz/data/msdata/SpectrumListCache.hpp"
 #include "pwiz/data/msdata/SpectrumListThreadsafe.hpp"
-#include "pwiz/analysis/spectrum_processing/SpectrumListFactory.hpp"
 #include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
@@ -606,9 +605,9 @@ namespace analysis {
         // Initialize the unique methods for demultiplexing
         demux_->Initialize(sl_, pmc_);
 
-        cachedSolutions_.reset(new SolutionCache(sl_, demux_, params_.demuxBlockExtra, demuxSolver_, 16));
+        cachedSolutions_.reset(new SolutionCache(sl_, demux_, params_.demuxBlockExtra, demuxSolver_, 32));
 
-        if (params_.threadLimit > 0 && params_.threadLimit <= 32 && false)
+        if (params_.threadLimit > 0 && params_.threadLimit <= 32)
             threadlimitSemaphore_.reset(new boost::interprocess::interprocess_semaphore(params_.threadLimit));
     }
 
@@ -680,6 +679,14 @@ namespace analysis {
             demuxPrecursor.isolationWindow.set(MS_isolation_window_target_m_z, targetMz, mzUnits);
             demuxPrecursor.isolationWindow.set(MS_isolation_window_lower_offset, offsetMz, mzUnits);
             demuxPrecursor.isolationWindow.set(MS_isolation_window_upper_offset, offsetMz, mzUnits);
+            if (!demuxPrecursor.selectedIons.empty())
+            {
+                demuxPrecursor.selectedIons.front().set(MS_selected_ion_m_z, targetMz, mzUnits);
+                // Zero the precursor intensity since it is invalidated by splitting the demux windows.
+                // This could be recalculated if it ever becomes necessary.
+                auto intensityUnits = demuxPrecursor.selectedIons.front().cvParam(MS_peak_intensity).units;
+                demuxPrecursor.selectedIons.front().set(MS_peak_intensity, 0, intensityUnits);
+            }
         }
         demuxed->precursors.push_back(demuxPrecursor);
 

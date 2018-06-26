@@ -37,7 +37,7 @@ namespace analysis{
         {
             Params() :
             variableFill(false),
-            useMultithreading(true),
+            useMultithreading(false),
             minimumWindowSize(0.2) {}
 
             /// Whether this data acquired with variable fill times or not.

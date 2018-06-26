@@ -65,7 +65,7 @@ namespace analysis {
                 variableFill(false),
                 interpolateRetentionTime(true),
                 optimization(Optimization::NONE),
-                useMultithreading(true),
+                useMultithreading(false),
                 threadLimit(0),
                 minimumWindowSize(0.2)
             {}
