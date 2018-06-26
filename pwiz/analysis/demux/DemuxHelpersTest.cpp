@@ -359,9 +359,11 @@ protected:
         success = FindNearbySpectra(spectraIndices, msd.run.spectrumListPtr, centerIndex, 3);
         unit_assert(success);
         unit_assert_operator_equal(3, spectraIndices.size());
-        unit_assert_operator_equal(8, spectraIndices[0]);
-        unit_assert_operator_equal(9, spectraIndices[1]);
-        unit_assert_operator_equal(11, spectraIndices[2]);
+        unit_assert_operator_equal(11, centerIndex); // for clarity, verify that we have the right center index
+        unit_assert_operator_equal(9, spectraIndices[0]); // one ms2 behind center
+        // index 10 is the ms1
+        unit_assert_operator_equal(11, spectraIndices[1]); // center ms2
+        unit_assert_operator_equal(12, spectraIndices[2]); // one ms2 after center
 
         // Test stride
         success = FindNearbySpectra(spectraIndices, msd.run.spectrumListPtr, centerIndex, 5, cycleSize);

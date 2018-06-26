@@ -137,7 +137,7 @@ namespace analysis
             throw std::runtime_error("Center index must be an MS2 spectrum");
         spectraIndices.clear();
         spectraIndices.push_back(centerIndex);
-        size_t backwardsNeeded = size_t(round(numSpectraToFind / 2.0));
+        size_t backwardsNeeded = size_t(round((numSpectraToFind - 1) / 2.0));
         size_t afterNeeded = numSpectraToFind - 1 - backwardsNeeded;
         size_t indexLoc = centerIndex;
 
