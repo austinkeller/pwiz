@@ -707,11 +707,11 @@ namespace analysis {
         auto rawSolutionIntensities = solution->row(referenceDemuxIndices[request.demuxIndex]);
         for (int i = 0; i < rawSolutionIntensities.size(); ++i)
         {
+            // Note: We don't skip zero-valued entries in profile spectra because Thermo's centroider assumes even m/z spacing
             if (rawSolutionIntensities[i] <= 0.0 && !isProfileSpectrum) continue;
-            // Note: We don't trim zero-valued entries in profile spectra because Thermo's centroider assumes even m/z spacing
 
             // The original intensities can be 0 even if the least squares solution are non-zero. This may invalidate the idea of rescaling the intensities...
-            if (originalIntensities[i] <= 0.0) continue;
+            if (originalIntensities[i] <= 0.0 && !isProfileSpectrum) continue;
 
             newMzs.push_back(originalMzs[i]);
             if (!params_.variableFill)
