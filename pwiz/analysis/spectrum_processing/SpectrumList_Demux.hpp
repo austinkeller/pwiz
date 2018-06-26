@@ -66,8 +66,8 @@ namespace analysis {
                 interpolateRetentionTime(true),
                 optimization(Optimization::NONE),
                 useMultithreading(true),
-                threadLimit(0)
-
+                threadLimit(0),
+                minimumWindowSize(0.2)
             {}
 
             /// Error scalar for extracting MS/MS peaks.
@@ -104,6 +104,8 @@ namespace analysis {
             bool useMultithreading;
 
             unsigned int threadLimit;
+
+            double minimumWindowSize;
         };
 
         /// Generates an abstract SpectrumList_Demux decorator from inner SpectrumList

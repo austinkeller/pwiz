@@ -251,6 +251,7 @@ namespace analysis {
         PrecursorMaskCodec::Params newParams;
         newParams.variableFill = p.variableFill;
         newParams.useMultithreading = p.useMultithreading;
+        newParams.minimumWindowSize = p.minimumWindowSize;
         return newParams;
     }
 

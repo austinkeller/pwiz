@@ -191,7 +191,7 @@ namespace analysis{
         if (isolationWindows.size() <= 1)
             return;
 
-        const MZHash minimumWindowSize = IsoWindowHasher::Hash(0.2);
+        const MZHash minimumWindowSize = IsoWindowHasher::Hash(params_.minimumWindowSize);
 
         // Reduce risk of unintentional modification
         const auto& const_isolationWindows = isolationWindows;
@@ -322,7 +322,12 @@ namespace analysis{
         }
         assert(indices.size() > 0);
         if (indices.size() != overlapsPerSpectrum_ * precursorsPerSpectrum_)
-            throw runtime_error("SpectrumToIndices() Number of demultiplexing windows changed. Window boundary tolerance may be set too low.");
+            /* This can happen when either (1) the experimental scheme is not solvable as a demultiplexing problem, or (2) the window
+             * boundary tolerance (hardcoded in the IsoWindowHasher) is set too low. Most likely, the users isolation scheme was not
+             * properly defined causing window boundaries to not align. For example, using too small or large of an isolation window
+             * width for a set of isolation targets can cause misalignment. This can be compensated for to some extent by increasing the
+             * minimum window size. This workaround isn't ideal and can create artifacts, but can salvage experiments in a pinch. */
+            throw runtime_error("SpectrumToIndices() Number of demultiplexing windows changed. Minimum window size or window boundary tolerance may be set too low.");
     }
 
     struct IsolationWindow PrecursorMaskCodec::GetIsolationWindow(size_t i) const

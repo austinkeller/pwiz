@@ -810,6 +810,7 @@ SpectrumListPtr filterCreator_demux(const MSData& msd, const string& carg, pwiz:
     demuxParams.interpolateRetentionTime = parseKeyValuePair<bool>(arg, "interpolateRT=", k_defaultDemuxParams.interpolateRetentionTime);
     demuxParams.threadLimit = parseKeyValuePair<unsigned int>(arg, "threadLimit=", k_defaultDemuxParams.threadLimit);
     demuxParams.useMultithreading = parseKeyValuePair<bool>(arg, "useMultithreading=", k_defaultDemuxParams.useMultithreading);
+    demuxParams.minimumWindowSize = parseKeyValuePair<double>(arg, "minWindowSize=", k_defaultDemuxParams.minimumWindowSize);
     bal::trim(arg);
     if (!arg.empty())
         throw runtime_error("[demultiplex] unhandled text remaining in argument string: \"" + arg + "\"");
@@ -826,7 +827,18 @@ SpectrumListPtr filterCreator_demux(const MSData& msd, const string& carg, pwiz:
 
     return SpectrumListPtr(new SpectrumList_Demux(msd.run.spectrumListPtr, demuxParams));
 }
-UsageInfo usage_demux = { "massError=<tolerance and units, eg 0.5Da (default 10ppm)> nnlsMaxIter=<int (50)> nnlsEps=<real (1e-10)> noWeighting=<bool (false)> demuxBlockExtra=<real (0)> variableFill=<bool (false)> noSumNormalize=<bool (false)> optimization=<(none)|overlap_only> interpolateRT=<bool (true)>",
+UsageInfo usage_demux = { 
+    "massError=<tolerance and units, eg 0.5Da (default 10ppm)>"
+    " nnlsMaxIter=<int (50)> nnlsEps=<real (1e-10)>"
+    " noWeighting=<bool (false)>"
+    " demuxBlockExtra=<real (0)>"
+    " variableFill=<bool (false)>"
+    " noSumNormalize=<bool (false)>"
+    " optimization=<(none)|overlap_only>"
+    " interpolateRT=<bool (true)>"
+    " threadLimit=<int (0)>"
+    " useMultithreading=<bool (false)>"
+    " minWindowSize=<real (0.2)>",
     "Separates overlapping or MSX multiplexed spectra into several demultiplexed spectra by inferring from adjacent multiplexed spectra. Optionally handles variable fill times (for Thermo)." };
 
 SpectrumListPtr filterCreator_precursorRefine(const MSData& msd, const string& arg, pwiz::util::IterationListenerRegistry* ilr)
