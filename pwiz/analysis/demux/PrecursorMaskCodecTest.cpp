@@ -49,7 +49,9 @@ protected:
 
     void PrecursorMaskCodecDummyInitialize(SpectrumList_const_ptr slPtr, bool variableFill = false)
     {
-        PrecursorMaskCodec pmc(slPtr, variableFill);
+        PrecursorMaskCodec::Params params;
+        params.variableFill = variableFill;
+        PrecursorMaskCodec pmc(slPtr, params);
     }
 
     void ExceptionTest()
@@ -68,9 +70,9 @@ protected:
 
         // This should fail to read through the example dataset because there are too few spectra to interpret an acquisition scheme
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
-            "Could not determine demultiplexing scheme. Too few spectra to determine the number of precursor windows.");
+            "IdentifyCycle() Could not determine demultiplexing scheme. Too few spectra to determine the number of precursor windows.");
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
-            "Could not determine demultiplexing scheme. Too few spectra to determine the number of precursor windows.");
+            "IdentifyCycle() Could not determine demultiplexing scheme. Too few spectra to determine the number of precursor windows.");
 
         /* The number of precursors for each spectrum cannot change between spectra and cannot be empty (Mathematically, this might be
         * allowable for demultiplexing but the code makes some simplifying assumptions that rely on these two being true)
@@ -84,9 +86,9 @@ protected:
 
         // This should fail to read through the example dataset because the first MS2 spectrum is empty
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
-            "MS2 spectrum is missing precursor information.");
+            "IdentifyCycle() MS2 spectrum is missing precursor information.");
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
-            "MS2 spectrum is missing precursor information.");
+            "IdentifyCycle() MS2 spectrum is missing precursor information.");
 
         // Remove all MS2 spectra
         msd = boost::make_shared<MSData>();
@@ -102,9 +104,9 @@ protected:
 
         // This should fail because there are no MS2 spectra in the list
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
-            "No MS2 scans found for this experiment.");
+            "IdentifyCycle() No MS2 scans found for this experiment.");
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
-            "No MS2 scans found for this experiment.");
+            "IdentifyCycle() No MS2 scans found for this experiment.");
 
         // Make the number of precursors > 1 but allow the number of precursors to vary
         msd = boost::make_shared<MSData>();
@@ -126,9 +128,9 @@ protected:
 
         // This should fail to read through the example dataset because the number of precursors changes between MS2 spectra
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
-            "Precursor sizes are varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
+            "IdentifyCycle() Precursor sizes are varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
-            "Precursor sizes are varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
+            "IdentifyCycle() Precursor sizes are varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
     }
 
     // Test non-multiplexed spectra. This should simply return the input spectra.
