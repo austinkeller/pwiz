@@ -48,7 +48,6 @@ namespace pwiz {
 namespace analysis {
 
     using namespace msdata;
-    using namespace DemuxTypes;
 #ifdef _PROFILE_PERFORMANCE
     using namespace chrono;
 #endif
@@ -125,9 +124,10 @@ namespace analysis {
             /// Parses a list of key-value pairs coded in a string id to replace the old mux index with the new demux index.
             /// This modifes the "scan" key to use the new demux scan index while also reassigning the original scan index to the key "originalScan".
             /// @param[in] id Original scan id to be modified
-            /// @param[in] scanNumber The index of the demux spectrum to be added
+            /// @param[in] scanNumber The index of the original scan
+            /// @param[in] demuxIndex The index of the demux spectrum to be added
             /// @return The modified scan id
-            static std::string injectScanId(std::string id, size_t scanNumber);
+            static std::string injectScanId(std::string id, size_t scanNumber, size_t demuxIndex);
         };
 
         /// Retrieves demultiplexed spectrum from cache or, if it isn't cached, this delegates the demultiplexing of the spectrum.
@@ -194,7 +194,7 @@ namespace analysis {
 
     } // namespace
 
-    const std::string& SpectrumList_Demux::Params::optimizationToString(SpectrumList_Demux::Params::Optimization opt)
+    std::string SpectrumList_Demux::Params::optimizationToString(SpectrumList_Demux::Params::Optimization opt)
     {
         return enumToString<SpectrumList_Demux::Params::Optimization>(opt, kOptimizationStrings);
     }
@@ -248,11 +248,13 @@ namespace analysis {
             indexMap.push_back(originalIndex);
             spectrumIdentities.push_back(spectrumIdentity);
             spectrumIdentities.back().index = spectrumIdentities.size() - 1;
-            spectrumIdentities.back().id += " demux=" + lexical_cast<string>(demuxIndex);
+            //spectrumIdentities.back().id += " demux=" + to_string(demuxIndex);
+            // update scan= and use originalScan=
+            spectrumIdentities.back().id = injectScanId(spectrumIdentities.back().id, spectrumIdentities.size(), demuxIndex);
         }
     }
 
-    string SpectrumList_Demux::Impl::IndexMapper::injectScanId(string id, size_t scanNumber)
+    string SpectrumList_Demux::Impl::IndexMapper::injectScanId(string id, size_t scanNumber, size_t demuxIndex)
     {
         boost::char_separator<char> sep(" ");
         ScanIdTokenizer tokenizer(id, sep);
@@ -268,12 +270,17 @@ namespace analysis {
             }
             if (attrs[0] == "scan")
             {
-                newId += "scan=" + lexical_cast<string>(scanNumber)+" ";
                 newId += "originalScan=" + attrs[1] + " ";
+                newId += "demux=" + lexical_cast<string>(demuxIndex) + " ";
+                newId += "scan=" + lexical_cast<string>(scanNumber) + " ";
                 continue;
             }
             newId += *token + " ";
         }
+        // remove trailing whitespace
+        auto end = newId.find_last_not_of(" ");
+        if (end != std::string::npos)
+            newId.erase(end + 1);
         return newId;
     }
 
@@ -281,7 +288,7 @@ namespace analysis {
         demuxSolver_(new NNLSSolver(p.nnlsMaxIter, p.nnlsEps)),
         lastSolved_(new PreviousDemuxSolution),
         params_(p)
-#ifdef _USE_DEMUX_DEBUG_WRITER		
+#ifdef _USE_DEMUX_DEBUG_WRITER      
         ,
         debugWriter_(boost::make_shared<DemuxDebugWriter>("DemuxDebugOutput.log"))
 #endif

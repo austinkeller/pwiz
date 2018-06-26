@@ -45,70 +45,70 @@ class CSPLINE_API cSpline
 
 public:
 
-	/**  Constructor: Calculates the spline curve coefficients
+    /**  Constructor: Calculates the spline curve coefficients
 
-	@param[in] x  The x points
-	@param[in] y  The y points
+    @param[in] x  The x points
+    @param[in] y  The y points
 
-	*/
-	cSpline(
-		const std::vector< double >& x,
-		const std::vector< double >& y);
+    */
+    cSpline(
+        const std::vector< double >& x,
+        const std::vector< double >& y);
 
-	/** Check if input is insane
+    /** Check if input is insane
 
-	@return true if all OK
-	*/
-	bool IsSane() const
-	{
-		return static_cast<bool>(!myError);
-	}
+    @return true if all OK
+    */
+    bool IsSane() const
+    {
+        return static_cast<bool>(!myError);
+    }
 
-	/// error numbers
-	enum CSPLINE_API e_error
-	{
-		no_error,
-		x_not_ascending,
-		no_input,
-		not_single_valued,
+    /// error numbers
+    enum CSPLINE_API e_error
+    {
+        no_error,
+        x_not_ascending,
+        no_input,
+        not_single_valued,
         not_bijective
-	} myError;
+    } myError;
 
-	/** Check for error
+    /** Check for error
 
-	@return 0 if all OK, otherwise an error number
+    @return 0 if all OK, otherwise an error number
 
-	*/
-	e_error IsError() const
-	{
-		return myError;
-	}
+    */
+    e_error IsError() const
+    {
+        return myError;
+    }
 
-	/** Get the Y value of the spline curves for a particular X
+    /** Get the Y value of the spline curves for a particular X
 
-	@param[in] x
+    @param[in] x
 
-	@return the y value
+    @return the y value
 
-	*/
-	double getY(double x);
+    */
+    double getY(double x);
 
 private:
 
-	/// The coefficients of the spline curve between two points
-	struct CSPLINE_API SplineSet
-	{
-		double a;   // constant
-		double b;   // 1st order coefficient
-		double c;   // 2nd order coefficient
-		double d;   // 3rd order coefficient
-		double x;   // starting x value
-	};
+    /// The coefficients of the spline curve between two points
+    struct CSPLINE_API SplineSet
+    {
+        double a;   // constant
+        double b;   // 1st order coefficient
+        double c;   // 2nd order coefficient
+        double d;   // 3rd order coefficient
+        double x;   // starting x value
+    };
 
-	/// The coefficients of the spline curves between all points
+    /// The coefficients of the spline curves between all points
 #pragma warning( disable : 4251 )
-	std::vector< SplineSet > mySplineSet_;
+    std::vector< SplineSet > mySplineSet_;
 
-	bool IsInputSane(const std::vector<double>& myX, const std::vector<double>& myY);
+    bool IsInputSane(const std::vector<double>& myX, const std::vector<double>& myY);
 };
 

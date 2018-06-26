@@ -30,96 +30,96 @@ and was released under the cc-wiki licence with attirbution ( this paragraph ) r
 #include <algorithm>
 #include <cmath>
 
-	using namespace std;
+    using namespace std;
 
-	typedef std::vector< double > vd_t;
+    typedef std::vector< double > vd_t;
 
-	cSpline::cSpline(const vd_t &x, const vd_t &y)
-	{
-		if (!IsInputSane(x, y))
-			return;
+    cSpline::cSpline(const vd_t &x, const vd_t &y)
+    {
+        if (!IsInputSane(x, y))
+            return;
 
-		int n = static_cast<int>(x.size() - 1);
-		vd_t a;
-		a.insert(a.begin(), y.begin(), y.end());
-		vd_t b(n);
-		vd_t d(n);
-		vd_t h;
+        int n = static_cast<int>(x.size() - 1);
+        vd_t a;
+        a.insert(a.begin(), y.begin(), y.end());
+        vd_t b(n);
+        vd_t d(n);
+        vd_t h;
 
-		for (int i = 0; i < n; ++i)
-			h.push_back(x[i + 1] - x[i]);
+        for (int i = 0; i < n; ++i)
+            h.push_back(x[i + 1] - x[i]);
 
-		vd_t alpha;
-		for (int i = 1; i < n; ++i)
-			alpha.push_back(3 * (a[i + 1] - a[i]) / h[i] - 3 * (a[i] - a[i - 1]) / h[i - 1]);
+        vd_t alpha;
+        for (int i = 1; i < n; ++i)
+            alpha.push_back(3 * (a[i + 1] - a[i]) / h[i] - 3 * (a[i] - a[i - 1]) / h[i - 1]);
 
-		vd_t c(n + 1);
-		vd_t l(n + 1);
-		vd_t mu(n + 1);
-		vd_t z(n + 1);
-		l[0] = 1;
-		mu[0] = 0;
-		z[0] = 0;
+        vd_t c(n + 1);
+        vd_t l(n + 1);
+        vd_t mu(n + 1);
+        vd_t z(n + 1);
+        l[0] = 1;
+        mu[0] = 0;
+        z[0] = 0;
 
-		for (int i = 1; i < n; ++i)
-		{
-			l[i] = 2 * (x[i + 1] - x[i - 1]) - h[i - 1] * mu[i - 1];
-			mu[i] = h[i] / l[i];
-			z[i] = (alpha[i - 1] - h[i - 1] * z[i - 1]) / l[i];
-		}
+        for (int i = 1; i < n; ++i)
+        {
+            l[i] = 2 * (x[i + 1] - x[i - 1]) - h[i - 1] * mu[i - 1];
+            mu[i] = h[i] / l[i];
+            z[i] = (alpha[i - 1] - h[i - 1] * z[i - 1]) / l[i];
+        }
 
-		l[n] = 1;
-		z[n] = 0;
-		c[n] = 0;
+        l[n] = 1;
+        z[n] = 0;
+        c[n] = 0;
 
-		for (int j = n - 1; j >= 0; --j)
-		{
-			c[j] = z[j] - mu[j] * c[j + 1];
-			b[j] = (a[j + 1] - a[j]) / h[j] - h[j] * (c[j + 1] + 2 * c[j]) / 3;
-			d[j] = (c[j + 1] - c[j]) / 3 / h[j];
-		}
+        for (int j = n - 1; j >= 0; --j)
+        {
+            c[j] = z[j] - mu[j] * c[j + 1];
+            b[j] = (a[j + 1] - a[j]) / h[j] - h[j] * (c[j + 1] + 2 * c[j]) / 3;
+            d[j] = (c[j + 1] - c[j]) / 3 / h[j];
+        }
 
-		mySplineSet_.resize(n);
-		for (int i = 0; i < n; ++i)
-		{
-			mySplineSet_[i].a = a[i];
-			mySplineSet_[i].b = b[i];
-			mySplineSet_[i].c = c[i];
-			mySplineSet_[i].d = d[i];
-			mySplineSet_[i].x = x[i];
-		}
-		return;
-	}
+        mySplineSet_.resize(n);
+        for (int i = 0; i < n; ++i)
+        {
+            mySplineSet_[i].a = a[i];
+            mySplineSet_[i].b = b[i];
+            mySplineSet_[i].c = c[i];
+            mySplineSet_[i].d = d[i];
+            mySplineSet_[i].x = x[i];
+        }
+        return;
+    }
 
-	double cSpline::getY(double x)
-	{
-		int j;
-		for (j = 0; j < (int)mySplineSet_.size(); j++)
-		{
-			if (mySplineSet_[j].x > x)
-			{
-				if (j == 0)
-					j++;
-				break;
-			}
-		}
-		j--;
+    double cSpline::getY(double x)
+    {
+        int j;
+        for (j = 0; j < (int)mySplineSet_.size(); j++)
+        {
+            if (mySplineSet_[j].x > x)
+            {
+                if (j == 0)
+                    j++;
+                break;
+            }
+        }
+        j--;
 
-		double dx = x - mySplineSet_[j].x;
-		double y = mySplineSet_[j].a + mySplineSet_[j].b * dx + mySplineSet_[j].c * dx* dx +
-			mySplineSet_[j].d * dx* dx * dx;
+        double dx = x - mySplineSet_[j].x;
+        double y = mySplineSet_[j].a + mySplineSet_[j].b * dx + mySplineSet_[j].c * dx* dx +
+            mySplineSet_[j].d * dx* dx * dx;
 
-		return y;
+        return y;
 
-	}
+    }
 
-	bool cSpline::IsInputSane(const std::vector<double>& myX, const std::vector<double>& myY)
-	{
-		if (!myX.size() || !myY.size())
-		{
-			myError = no_input;
-			return false;
-		}
+    bool cSpline::IsInputSane(const std::vector<double>& myX, const std::vector<double>& myY)
+    {
+        if (!myX.size() || !myY.size())
+        {
+            myError = no_input;
+            return false;
+        }
 
         if (myX.size() != myY.size())
         {
@@ -127,30 +127,30 @@ and was released under the cc-wiki licence with attirbution ( this paragraph ) r
             return false;
         }
 
-		if (!std::is_sorted(myX.begin(), myX.end()))
-		{
-			myError = x_not_ascending;
-			return false;
-		}
+        if (!std::is_sorted(myX.begin(), myX.end()))
+        {
+            myError = x_not_ascending;
+            return false;
+        }
 
-		bool first = true;
-		double xold;
-		for (double x : myX)
-		{
-			if (first)
-			{
-				xold = x;
+        bool first = true;
+        double xold;
+        for (double x : myX)
+        {
+            if (first)
+            {
+                xold = x;
                 first = false;
-				continue;
-			}
-			if (fabs(x - xold) < 1.0e-5)
-			{
-				myError = not_single_valued;
-				return false;
-			}
-			xold = x;
-		}
+                continue;
+            }
+            if (fabs(x - xold) < 1.0e-5)
+            {
+                myError = not_single_valued;
+                return false;
+            }
+            xold = x;
+        }
 
-		myError = no_error;
-		return true;
-	}
+        myError = no_error;
+        return true;
+    }

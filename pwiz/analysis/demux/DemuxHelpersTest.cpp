@@ -34,6 +34,7 @@ public:
     {
         SetUp();
         TryGetScanIDTokenTest();
+        TryGetScanIndexTest();
         TryGetDemuxIndexTest();
         TryGetOriginalIndexTest();
         TryGetMSLevelTest();
@@ -81,7 +82,7 @@ protected:
         // Pull pointers from existing spectra
         shared_ptr<SpectrumListSimple> spectrumListPtr = boost::dynamic_pointer_cast<SpectrumListSimple>(msd.run.spectrumListPtr);
         if (!spectrumListPtr)
-            throw std::runtime_error("initializeLarge() spectrumList from initializeTiny was not of the expected type");
+            throw std::runtime_error(__FUNCTION__ " spectrumList from initializeTiny was not of the expected type");
 
         auto dppwiz = spectrumListPtr->dp;
 
@@ -220,6 +221,18 @@ protected:
         }
     }
 
+    void TryGetScanIndexTest()
+    {
+        bool success;
+        size_t index;
+        success = TryGetScanIndex(*_s10, index);
+        unit_assert(success);
+        unit_assert_operator_equal(index, 19);
+        Spectrum emptySpectrum;
+        success = TryGetScanIndex(emptySpectrum, index);
+        unit_assert(!success);
+    }
+
     void TryGetDemuxIndexTest()
     {
         bool success;
@@ -227,7 +240,7 @@ protected:
         success = TryGetDemuxIndex(*_s10, index);
         unit_assert(!success);
         Spectrum emptySpectrum;
-        emptySpectrum.id = emptySpectrum.id + " demux=0";
+        emptySpectrum.id = emptySpectrum.id + " originalScan=19 demux=0 scan=2";
         success = TryGetDemuxIndex(emptySpectrum, index);
         unit_assert(success);
         unit_assert_operator_equal(index, 0);
@@ -237,10 +250,12 @@ protected:
     {
         bool success;
         size_t index;
-        success = TryGetOriginalIndex(*_s10, index);
+        Spectrum emptySpectrum;
+        emptySpectrum.id = emptySpectrum.id + " originalScan=19 demux=0 scan=2";
+        success = TryGetOriginalIndex(emptySpectrum, index);
         unit_assert(success);
         unit_assert_operator_equal(index, 19);
-        Spectrum emptySpectrum;
+        emptySpectrum = Spectrum();
         success = TryGetOriginalIndex(emptySpectrum, index);
         unit_assert(!success);
     }
@@ -380,7 +395,7 @@ int main(int argc, char* argv[])
 
     try
     {
-        DemuxHelpersTest tester;
+        auto tester = DemuxHelpersTest();
         tester.Run();
     }
     catch (exception& e)

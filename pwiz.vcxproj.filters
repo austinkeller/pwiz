@@ -520,6 +520,14 @@
     <ClCompile Include="pwiz\analysis\demux\PrecursorMaskCodec.cpp" />
     <ClCompile Include="pwiz\analysis\demux\SpectrumPeakExtractor.cpp" />
     <ClCompile Include="pwiz\analysis\demux\SpectrumPeakExtractorTest.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\PrecursorMaskCodecTest.cpp" />
+    <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_Demux.cpp" />
+    <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_DemuxTest.cpp" />
+    <ClCompile Include="pwiz\analysis\spectrum_processing\MS2Deisotoper.cpp" />
+    <ClCompile Include="pwiz\analysis\spectrum_processing\MS2DeisotoperTest.cpp" />
+    <ClCompile Include="pwiz\analysis\spectrum_processing\MS2NoiseFilter.cpp" />
+    <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_IonMobility.cpp" />
+    <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_IonMobility_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\boost_aux\boost\nowide\args.hpp" />
@@ -927,5 +935,9 @@
     <ClInclude Include="pwiz\analysis\demux\OverlapDemultiplexer.hpp" />
     <ClInclude Include="pwiz\analysis\demux\PrecursorMaskCodec.hpp" />
     <ClInclude Include="pwiz\analysis\demux\SpectrumPeakExtractor.hpp" />
+    <ClInclude Include="pwiz\analysis\spectrum_processing\SpectrumList_Demux.hpp" />
+    <ClInclude Include="pwiz\analysis\spectrum_processing\MS2Deisotoper.hpp" />
+    <ClInclude Include="pwiz\analysis\spectrum_processing\MS2NoiseFilter.hpp" />
+    <ClInclude Include="pwiz\analysis\spectrum_processing\SpectrumList_IonMobility.hpp" />
   </ItemGroup>
 </Project>

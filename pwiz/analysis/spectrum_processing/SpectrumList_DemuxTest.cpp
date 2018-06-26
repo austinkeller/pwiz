@@ -134,7 +134,7 @@ void testOverlapOnly(const string& filepath)
         // Verify that the original spectrum was matched with the demux spectrum ids
         auto originalSpectrumId = originalSpectrumList.spectrumList->spectrumIdentity(TEST_SPECTRUM_OVERLAP_ORIGINAL);
         size_t originalIndexFromDemux;
-        unit_assert(TryGetOriginalIndex(originalSpectrumId, originalIndexFromDemux));
+        unit_assert(TryGetScanIndex(originalSpectrumId, originalIndexFromDemux));
         unit_assert_operator_equal(originalIndex, originalIndexFromDemux);
     }
 
@@ -286,7 +286,7 @@ void testMSXOnly(const string& filepath)
         // Verify that the original spectrum was matched with the demux spectrum ids
         auto originalSpectrumId = originalSpectrumList.spectrumList->spectrumIdentity(TEST_SPECTRUM_MSX_ORIGINAL);
         size_t originalIndexFromDemux;
-        unit_assert(TryGetOriginalIndex(originalSpectrumId, originalIndexFromDemux));
+        unit_assert(TryGetScanIndex(originalSpectrumId, originalIndexFromDemux));
         unit_assert_operator_equal(originalIndex, originalIndexFromDemux);
     }
 

@@ -24,11 +24,21 @@
 #include "CubicHermiteSpline.hpp"
 #include <boost/make_shared.hpp>
 
+#ifdef _PROFILE_PERFORMANCE
+#include <chrono>
+#include <iostream>
+#endif
+
 namespace pwiz {
 namespace analysis {
     using namespace std;
     using namespace DemuxTypes;
     using namespace msdata;
+
+#ifdef _PROFILE_PERFORMANCE
+    using namespace std;
+    using namespace chrono;
+#endif
 
     OverlapDemultiplexer::OverlapDemultiplexer(Params p) :
         params_(p)
@@ -53,6 +63,9 @@ namespace analysis {
 
     void OverlapDemultiplexer::BuildDeconvBlock(size_t index, const vector<size_t>& muxIndices, MatrixPtr& masks, MatrixPtr& signal)
     {
+#ifdef _PROFILE_PERFORMANCE
+        auto t1 = high_resolution_clock::now();
+#endif
         assert(sl_);
         assert(pmc_);
         if (!sl_ || !pmc_)
@@ -139,18 +152,54 @@ namespace analysis {
         vector<MatrixPtr> binnedIntensitiesCache;
         vector<boost::shared_ptr<VectorXd> > scanTimesCache;
 
+#ifdef _PROFILE_PERFORMANCE
+        // add function to be timed here
+        auto t2 = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds >(t2 - t1).count();
+        cout << "BuildDeconvBlock (First half): " << duration << endl;
+#endif
+
+#ifdef _PROFILE_PERFORMANCE
+        t1 = high_resolution_clock::now();
+#endif
+
+
+
         // Loop through the scans and cache intensity and time data for interpolation
         for (size_t matrixRow = 0; matrixRow < scansInDeconv.size(); ++matrixRow)
         {
+#ifdef _PROFILE_PERFORMANCE
+            auto t1_matrixRow = high_resolution_clock::now();
+#endif
             binnedIntensitiesCache.push_back(boost::make_shared<MatrixType>(cyclesInBlock_, numTransitions));
             scanTimesCache.push_back(boost::make_shared<VectorXd>(cyclesInBlock_));
 
+#ifdef _PROFILE_PERFORMANCE
+            // add function to be timed here
+            auto t2_matrixRow = high_resolution_clock::now();
+            duration = duration_cast<microseconds >(t2_matrixRow - t1_matrixRow).count();
+            cout << "BuildDeconvBlock (Allocate matrices): " << duration << endl;
+#endif
+
+#ifdef _PROFILE_PERFORMANCE
+            t1_matrixRow = high_resolution_clock::now();
+#endif
             // Find scans around the spectrum to use for interpolation
             auto scan = scansInDeconv[matrixRow];
             vector<size_t> interpolationSpectraIndices;
             if (!FindNearbySpectra(interpolationSpectraIndices, sl_, scan, cyclesInBlock_, specPerCycle))
                 throw runtime_error("BuildDeconvBlock() Not enough spectra to interpolate for the overlap.");
 
+#ifdef _PROFILE_PERFORMANCE
+            // add function to be timed here
+            t2_matrixRow = high_resolution_clock::now();
+            duration = duration_cast<microseconds >(t2_matrixRow - t1_matrixRow).count();
+            cout << "BuildDeconvBlock (Find scans around the spectrum to use for interpolation): " << duration << endl;
+#endif
+
+#ifdef _PROFILE_PERFORMANCE
+            t1_matrixRow = high_resolution_clock::now();
+#endif
             // Extract retention times and peak intensities for scan
             for (size_t i = 0; i < interpolationSpectraIndices.size(); ++i)
             {
@@ -164,10 +213,36 @@ namespace analysis {
                 // Record scan time
                 (*scanTimesCache.back())[i] = startTime;
 
+#ifdef _PROFILE_PERFORMANCE
+                auto t1_i = high_resolution_clock::now();
+#endif
                 // Bin and record transitions
                 peakExtractor(currentSpectrum, *binnedIntensitiesCache.back(), i);
+#ifdef _PROFILE_PERFORMANCE
+                // add function to be timed here
+                auto t2_i = high_resolution_clock::now();
+                duration = duration_cast<microseconds >(t2_i - t1_i).count();
+                cout << "BuildDeconvBlock (Bin and record transitions): iteration " << i << ": " << duration << endl;
+#endif
             }
+#ifdef _PROFILE_PERFORMANCE
+            // add function to be timed here
+            t2_matrixRow = high_resolution_clock::now();
+            duration = duration_cast<microseconds >(t2_matrixRow - t1_matrixRow).count();
+            cout << "BuildDeconvBlock (Extract retention times and peak intensities for scan): " << duration << endl;
+#endif
         }
+
+#ifdef _PROFILE_PERFORMANCE
+        // add function to be timed here
+        t2 = high_resolution_clock::now();
+        duration = duration_cast<microseconds >(t2 - t1).count();
+        cout << "BuildDeconvBlock (Loop through the scans and cache intensity and time data for interpolation): " << duration << endl;
+#endif
+
+#ifdef _PROFILE_PERFORMANCE
+        t1 = high_resolution_clock::now();
+#endif
 
         // Perform interpolation
         // TODO parallelize this
@@ -175,7 +250,12 @@ namespace analysis {
         {
             InterpolateMuxRegion(signal->row(matrixRow), deconvStartTime, *binnedIntensitiesCache.at(matrixRow), *scanTimesCache.at(matrixRow));
         }
-
+#ifdef _PROFILE_PERFORMANCE
+        // add function to be timed here
+        t2 = high_resolution_clock::now();
+        duration = duration_cast<microseconds >(t2 - t1).count();
+        cout << "BuildDeconvBlock (Perform interpolation): " << duration << endl;
+#endif
 
 #if 0
         for (size_t matrixRow = 0; matrixRow < overlapRegionsInApprox_; ++matrixRow)
@@ -187,6 +267,9 @@ namespace analysis {
             }
         }
 #endif
+#ifdef _PROFILE_PERFORMANCE
+        t1 = high_resolution_clock::now();
+#endif
 
         // Cache the indices for the spectrum
         spectrumIndices_.clear();
@@ -195,6 +278,12 @@ namespace analysis {
             assert(demuxIndex >= lowerMZBound);
             spectrumIndices_.push_back(demuxIndex - lowerMZBound);
         }
+#ifdef _PROFILE_PERFORMANCE
+        // add function to be timed here
+        t2 = high_resolution_clock::now();
+        duration = duration_cast<microseconds >(t2 - t1).count();
+        cout << "BuildDeconvBlock (Cache the indices for the spectrum): " << duration << endl;
+#endif
     }
 
     void OverlapDemultiplexer::GetMatrixBlockIndices(size_t indexToDemux, std::vector<size_t>& muxIndices, double demuxBlockExtra) const

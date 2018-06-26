@@ -58,10 +58,21 @@ namespace analysis
         return false;
     }
 
-    bool TryGetOriginalIndex(const msdata::SpectrumIdentity& spectrumIdentity, size_t& index)
+    bool TryGetScanIndex(const msdata::SpectrumIdentity& spectrumIdentity, size_t& index)
     {
         std::string indexValue;
         if (TryGetScanIDToken(spectrumIdentity, "scan", indexValue))
+        {
+            index = std::stoi(indexValue);
+            return true;
+        }
+        return false;
+    }
+
+    bool TryGetOriginalIndex(const msdata::SpectrumIdentity& spectrumIdentity, size_t& index)
+    {
+        std::string indexValue;
+        if (TryGetScanIDToken(spectrumIdentity, "originalScan", indexValue))
         {
             index = std::stoi(indexValue);
             return true;

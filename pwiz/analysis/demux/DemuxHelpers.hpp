@@ -42,7 +42,7 @@ namespace analysis
     * @return Returns the string from the map
     */
     template <typename T>
-    const std::string& enumToString(T e, std::map<T, std::string> m)
+    std::string enumToString(T e, std::map<T, std::string> m)
     {
         return m.at(e);
     }
@@ -77,6 +77,15 @@ namespace analysis
     * @return false if the given token does not exist in the SpectrumIdentity id
     */
     bool TryGetScanIDToken(const msdata::SpectrumIdentity& spectrumIdentity, const std::string& tokenName, std::string& value);
+
+    /**
+    * Tries to read the scan index of the spectrum. This is a value that is used for indexing spectra and is not necessarily preserved 
+    * after demultiplexing but is unique within a given file.
+    * @param[in] spectrumIdentity The SpectrumIdentity to search
+    * @param[out] index The scan index of the spectrum
+    * @return false if the given SpectrumIdentity does not contain information about the scan index
+    */
+    bool TryGetScanIndex(const msdata::SpectrumIdentity& spectrumIdentity, size_t& index);
 
     /**
     * Tries to read the index of the demultiplexed spectrum relative to the multiplexed spectrum it was derived from.
