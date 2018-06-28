@@ -528,6 +528,20 @@
     <ClCompile Include="pwiz\analysis\spectrum_processing\MS2NoiseFilter.cpp" />
     <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_IonMobility.cpp" />
     <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_IonMobility_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\ChromatogramList_mz5.cpp" />
+    <ClCompile Include="pwiz\data\msdata\ChromatogramList_mz5_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Index_mzML.cpp" />
+    <ClCompile Include="pwiz\data\msdata\MSnReaderTest.cpp" />
+    <ClCompile Include="pwiz\data\msdata\MSNumpress.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Serializer_MSn.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Serializer_MSn_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Serializer_mz5.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Serializer_mz5_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumList_MSn.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumList_MSn_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumList_mz5.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumList_mz5_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumWorkerThreads.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\boost_aux\boost\nowide\args.hpp" />
@@ -939,5 +953,13 @@
     <ClInclude Include="pwiz\analysis\spectrum_processing\MS2Deisotoper.hpp" />
     <ClInclude Include="pwiz\analysis\spectrum_processing\MS2NoiseFilter.hpp" />
     <ClInclude Include="pwiz\analysis\spectrum_processing\SpectrumList_IonMobility.hpp" />
+    <ClInclude Include="pwiz\data\msdata\ChromatogramList_mz5.hpp" />
+    <ClInclude Include="pwiz\data\msdata\Index_mzML.hpp" />
+    <ClInclude Include="pwiz\data\msdata\MSNumpress.hpp" />
+    <ClInclude Include="pwiz\data\msdata\Serializer_MSn.hpp" />
+    <ClInclude Include="pwiz\data\msdata\Serializer_mz5.hpp" />
+    <ClInclude Include="pwiz\data\msdata\SpectrumList_MSn.hpp" />
+    <ClInclude Include="pwiz\data\msdata\SpectrumList_mz5.hpp" />
+    <ClInclude Include="pwiz\data\msdata\SpectrumWorkerThreads.hpp" />
   </ItemGroup>
 </Project>

@@ -328,6 +328,8 @@
     <ClCompile Include="pwiz\data\misc\TransientDataTest.cpp" />
     <ClCompile Include="pwiz\data\msdata\BinaryDataEncoder.cpp" />
     <ClCompile Include="pwiz\data\msdata\BinaryDataEncoderTest.cpp" />
+    <ClCompile Include="pwiz\data\msdata\ChromatogramList_mz5.cpp" />
+    <ClCompile Include="pwiz\data\msdata\ChromatogramList_mz5_Test.cpp" />
     <ClCompile Include="pwiz\data\msdata\CVParam.cpp" />
     <ClCompile Include="pwiz\data\msdata\CVParamTest.cpp" />
     <ClCompile Include="pwiz\data\msdata\CVTranslator.cpp" />
@@ -338,6 +340,7 @@
     <ClCompile Include="pwiz\data\msdata\DefaultReaderList.cpp" />
     <ClCompile Include="pwiz\data\msdata\Diff.cpp" />
     <ClCompile Include="pwiz\data\msdata\DiffTest.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Index_mzML.cpp" />
     <ClCompile Include="pwiz\data\msdata\IO.cpp" />
     <ClCompile Include="pwiz\data\msdata\IOTest.cpp" />
     <ClCompile Include="pwiz\data\msdata\LegacyAdapter.cpp" />
@@ -348,6 +351,8 @@
     <ClCompile Include="pwiz\data\msdata\MSDataMerger.cpp" />
     <ClCompile Include="pwiz\data\msdata\MSDataMergerTest.cpp" />
     <ClCompile Include="pwiz\data\msdata\MSDataTest.cpp" />
+    <ClCompile Include="pwiz\data\msdata\MSnReaderTest.cpp" />
+    <ClCompile Include="pwiz\data\msdata\MSNumpress.cpp" />
     <ClCompile Include="pwiz\data\msdata\RAMPAdapter.cpp" />
     <ClCompile Include="pwiz\data\msdata\RAMPAdapterTest.cpp" />
     <ClCompile Include="pwiz\data\msdata\Reader.cpp" />
@@ -357,6 +362,10 @@
     <ClCompile Include="pwiz\data\msdata\Serializer_DTA.cpp" />
     <ClCompile Include="pwiz\data\msdata\Serializer_MGF.cpp" />
     <ClCompile Include="pwiz\data\msdata\Serializer_MGF_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Serializer_MSn.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Serializer_MSn_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Serializer_mz5.cpp" />
+    <ClCompile Include="pwiz\data\msdata\Serializer_mz5_Test.cpp" />
     <ClCompile Include="pwiz\data\msdata\Serializer_mzML.cpp" />
     <ClCompile Include="pwiz\data\msdata\Serializer_mzML_Test.cpp" />
     <ClCompile Include="pwiz\data\msdata\Serializer_mzXML.cpp" />
@@ -372,10 +381,15 @@
     <ClCompile Include="pwiz\data\msdata\SpectrumList_BTDX.cpp" />
     <ClCompile Include="pwiz\data\msdata\SpectrumList_MGF.cpp" />
     <ClCompile Include="pwiz\data\msdata\SpectrumList_MGF_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumList_MSn.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumList_MSn_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumList_mz5.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumList_mz5_Test.cpp" />
     <ClCompile Include="pwiz\data\msdata\SpectrumList_mzML.cpp" />
     <ClCompile Include="pwiz\data\msdata\SpectrumList_mzML_Test.cpp" />
     <ClCompile Include="pwiz\data\msdata\SpectrumList_mzXML.cpp" />
     <ClCompile Include="pwiz\data\msdata\SpectrumList_mzXML_Test.cpp" />
+    <ClCompile Include="pwiz\data\msdata\SpectrumWorkerThreads.cpp" />
     <ClCompile Include="pwiz\data\msdata\Version.cpp" />
     <ClCompile Include="pwiz\data\msdata\cv.cpp" />
     <ClCompile Include="pwiz\data\msdata\cvgen.cpp" />
@@ -954,6 +968,14 @@
     <ClInclude Include="pwiz\analysis\spectrum_processing\SpectrumList_MZRefiner.hpp" />
     <ClInclude Include="pwiz\analysis\spectrum_processing\SpectrumList_ScanSummer.hpp" />
     <ClInclude Include="pwiz\data\identdata\Serializer_protXML.hpp" />
+    <ClInclude Include="pwiz\data\msdata\ChromatogramList_mz5.hpp" />
+    <ClInclude Include="pwiz\data\msdata\Index_mzML.hpp" />
+    <ClInclude Include="pwiz\data\msdata\MSNumpress.hpp" />
+    <ClInclude Include="pwiz\data\msdata\Serializer_MSn.hpp" />
+    <ClInclude Include="pwiz\data\msdata\Serializer_mz5.hpp" />
+    <ClInclude Include="pwiz\data\msdata\SpectrumList_MSn.hpp" />
+    <ClInclude Include="pwiz\data\msdata\SpectrumList_mz5.hpp" />
+    <ClInclude Include="pwiz\data\msdata\SpectrumWorkerThreads.hpp" />
     <ClInclude Include="pwiz\data\vendor_readers\ABI\ChromatogramList_ABI.hpp" />
     <ClInclude Include="pwiz\data\vendor_readers\ABI\Reader_ABI.hpp" />
     <ClInclude Include="pwiz\data\vendor_readers\ABI\Reader_ABI_Detail.hpp" />
