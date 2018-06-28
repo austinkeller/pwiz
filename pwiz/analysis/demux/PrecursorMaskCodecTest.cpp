@@ -33,7 +33,10 @@ public:
     void Run()
     {
         SetUp();
-        ExceptionTest();
+        TooFewSpectraToDetermineTheNumberOfPrecursorWindowsTest();
+        NumberOfPrecursorsIsVaryingBetweenIndividualMS2ScansTest();
+        MS2SpectrumIsMissingPrecursorInformationTest();
+        NoMS2ScansFoundForThisExperimentTest();
         TearDown();
     }
 
@@ -54,15 +57,15 @@ protected:
         PrecursorMaskCodec pmc(slPtr, params);
     }
 
-    void ExceptionTest()
-    {
-        // Remember which spectra correspond to what states
-        const int MS1_INDEX_0 = 0;
-        const int MS2_INDEX_0 = 1;
-        const int MS1_INDEX_1 = 2;
-        const int MS2_INDEX_1 = 3;
-        const int MS1_INDEX_2 = 4;
+    // Remember which spectra correspond to what states
+    const int MS1_INDEX_0 = 0;
+    const int MS2_INDEX_0 = 1;
+    const int MS1_INDEX_1 = 2;
+    const int MS2_INDEX_1 = 3;
+    const int MS1_INDEX_2 = 4;
 
+    void TooFewSpectraToDetermineTheNumberOfPrecursorWindowsTest()
+    {
         // Generate test data
         MSDataPtr msd = boost::make_shared<MSData>();
         examples::initializeTiny(*msd);
@@ -73,41 +76,15 @@ protected:
             "IdentifyCycle() Could not determine demultiplexing scheme. Too few spectra to determine the number of precursor windows.");
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
             "IdentifyCycle() Could not determine demultiplexing scheme. Too few spectra to determine the number of precursor windows.");
+    }
 
-        /* The number of precursors for each spectrum cannot change between spectra and cannot be empty (Mathematically, this might be
-        * allowable for demultiplexing but the code makes some simplifying assumptions that rely on these two being true)
-        */
-
-        // Make the number of precursors for the first MS2 spectrum equal to zero
-        msd = boost::make_shared<MSData>();
+    void NumberOfPrecursorsIsVaryingBetweenIndividualMS2ScansTest()
+    {
+        // Generate test data
+        MSDataPtr msd = boost::make_shared<MSData>();
         examples::initializeTiny(*msd);
-        spectrumListPtr = msd->run.spectrumListPtr;
-        spectrumListPtr->spectrum(MS2_INDEX_0)->precursors.clear();
-
-        // This should fail to read through the example dataset because the first MS2 spectrum is empty
-        unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
-            "IdentifyCycle() MS2 spectrum is missing precursor information.");
-        unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
-            "IdentifyCycle() MS2 spectrum is missing precursor information.");
-
-        // Remove all MS2 spectra
-        msd = boost::make_shared<MSData>();
-        examples::initializeTiny(*msd);
-        spectrumListPtr = msd->run.spectrumListPtr;
-        shared_ptr<SpectrumListSimple> spectrumListSimple(new SpectrumListSimple);
-        spectrumListSimple->dp = boost::make_shared<DataProcessing>(*spectrumListPtr->dataProcessingPtr());
-        spectrumListSimple->spectra.push_back(spectrumListPtr->spectrum(MS1_INDEX_0));
-        spectrumListSimple->spectra.push_back(spectrumListPtr->spectrum(MS1_INDEX_1));
-        spectrumListSimple->spectra.push_back(spectrumListPtr->spectrum(MS1_INDEX_2));
-        msd->run.spectrumListPtr = spectrumListSimple;
-        spectrumListPtr = msd->run.spectrumListPtr;
-
-        // This should fail because there are no MS2 spectra in the list
-        unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
-            "IdentifyCycle() No MS2 scans found for this experiment.");
-        unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
-            "IdentifyCycle() No MS2 scans found for this experiment.");
-
+        auto spectrumListPtr = msd->run.spectrumListPtr;
+        
         // Make the number of precursors > 1 but allow the number of precursors to vary
         msd = boost::make_shared<MSData>();
         examples::initializeTiny(*msd);
@@ -126,11 +103,61 @@ protected:
         precursor.activation.set(MS_collision_induced_dissociation);
         precursor.activation.set(MS_collision_energy, 35.00, UO_electronvolt);
 
+        /* The number of precursors for each spectrum cannot change between spectra and cannot be empty (Mathematically, this might be
+        * allowable for demultiplexing but the code makes some simplifying assumptions that rely on these two being true)
+        */
+
         // This should fail to read through the example dataset because the number of precursors changes between MS2 spectra
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
-            "IdentifyCycle() Precursor sizes are varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
+            "IdentifyCycle() Number of precursors is varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
         unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
-            "IdentifyCycle() Precursor sizes are varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
+            "IdentifyCycle() Number of precursors is varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
+    }
+
+    void MS2SpectrumIsMissingPrecursorInformationTest()
+    {
+        // Generate test data
+        MSDataPtr msd = boost::make_shared<MSData>();
+        examples::initializeTiny(*msd);
+        auto spectrumListPtr = msd->run.spectrumListPtr;
+
+        // Make the number of precursors for the first MS2 spectrum equal to zero
+        msd = boost::make_shared<MSData>();
+        examples::initializeTiny(*msd);
+        spectrumListPtr = msd->run.spectrumListPtr;
+        spectrumListPtr->spectrum(MS2_INDEX_0)->precursors.clear();
+
+        // This should fail to read through the example dataset because the first MS2 spectrum is empty
+        unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
+            "IdentifyCycle() MS2 spectrum is missing precursor information.");
+        unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
+            "IdentifyCycle() MS2 spectrum is missing precursor information.");
+    }
+
+    void NoMS2ScansFoundForThisExperimentTest()
+    {
+        // Generate test data
+        MSDataPtr msd = boost::make_shared<MSData>();
+        examples::initializeTiny(*msd);
+        auto spectrumListPtr = msd->run.spectrumListPtr;
+
+        // Remove all MS2 spectra
+        msd = boost::make_shared<MSData>();
+        examples::initializeTiny(*msd);
+        spectrumListPtr = msd->run.spectrumListPtr;
+        shared_ptr<SpectrumListSimple> spectrumListSimple(new SpectrumListSimple);
+        spectrumListSimple->dp = boost::make_shared<DataProcessing>(*spectrumListPtr->dataProcessingPtr());
+        spectrumListSimple->spectra.push_back(spectrumListPtr->spectrum(MS1_INDEX_0));
+        spectrumListSimple->spectra.push_back(spectrumListPtr->spectrum(MS1_INDEX_1));
+        spectrumListSimple->spectra.push_back(spectrumListPtr->spectrum(MS1_INDEX_2));
+        msd->run.spectrumListPtr = spectrumListSimple;
+        spectrumListPtr = msd->run.spectrumListPtr;
+
+        // This should fail because there are no MS2 spectra in the list
+        unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, false), runtime_error,
+            "IdentifyCycle() No MS2 scans found for this experiment.");
+        unit_assert_throws_what(PrecursorMaskCodecDummyInitialize(spectrumListPtr, true), runtime_error,
+            "IdentifyCycle() No MS2 scans found for this experiment.");
     }
 
     // Test non-multiplexed spectra. This should simply return the input spectra.

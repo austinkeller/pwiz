@@ -133,7 +133,7 @@ namespace analysis{
                 if (spec->precursors.size() == 0)
                     throw runtime_error(ms2SpectrumMissingPrecursorInfoError);
                 if (spec->precursors.size() != precursorsPerSpectrum_)
-                    throw runtime_error("IdentifyCycle() Precursor sizes are varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
+                    throw runtime_error("IdentifyCycle() Number of precursors is varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
                 for (const auto& p : spec->precursors)
                 {
                     string mzString = prec_to_string(p);
