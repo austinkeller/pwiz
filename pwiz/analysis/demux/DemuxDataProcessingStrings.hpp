@@ -25,6 +25,5 @@
 namespace DemuxDataProcessingStrings
 {
     static const std::string kDEMUX_NAME = "Demultiplexing"; ///< This is a flag used by SpectrumWorkerThreads to handle demultiplexing
-    static const std::string kDEMUX_THREADING_NAME = "(Threaded)";
 } // namespace DemuxTypes
 #endif //_DEMUXDATAPROCESSINGSTRINGS_HPP

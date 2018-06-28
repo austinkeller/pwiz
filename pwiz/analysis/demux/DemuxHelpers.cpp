@@ -20,8 +20,6 @@
 #include "DemuxHelpers.hpp"
 #include <boost/algorithm/string.hpp>
 
-#include <boost/thread.hpp>
-
 namespace pwiz
 {
 namespace analysis
@@ -117,17 +115,8 @@ namespace analysis
         return true;
     }
 
-    static boost::mutex g_debug_mutex;
-
     bool FindNearbySpectra(std::vector<size_t>& spectraIndices, msdata::SpectrumList_const_ptr slPtr, size_t centerIndex, size_t numSpectraToFind, size_t stride)
     {
-#ifdef _DEBUG_DEMUX_THREADING
-        {
-            boost::lock_guard<boost::mutex> lock(g_debug_mutex);
-            cerr << "FNS::centerIndex " << centerIndex << endl;
-        }
-#endif
-
         if (centerIndex >= slPtr->size())
             throw std::out_of_range("Spectrum index not in range of the given spectrum list");
         msdata::Spectrum_const_ptr spec = slPtr->spectrum(centerIndex, true);
@@ -147,12 +136,6 @@ namespace analysis
             --indexLoc;
             // note -- the cache handles calls that request binary+meta data, so the binary data is requested
             // even though it is not needed.  Otherwise, the cache would not be used to pull the spectrum
-#ifdef _DEBUG_DEMUX_THREADING
-            {
-                boost::lock_guard<boost::mutex> lock(g_debug_mutex);
-                cerr << "FNS::indexLoc backwardsNeeded " << indexLoc << endl;
-            }
-#endif
             spec = slPtr->spectrum(indexLoc, true);
             if (!spec)
                 throw std::runtime_error("[DemuxHelpers::FindNearbySpectra] Failed to get spectrum from spectrumlists");
@@ -176,12 +159,6 @@ namespace analysis
         stepCount = 0;
         while (indexLoc < slPtr->size() && afterNeeded > 0)
         {
-#ifdef _DEBUG_DEMUX_THREADING
-            {
-                boost::lock_guard<boost::mutex> lock(g_debug_mutex);
-                cerr << "FNS::indexLoc afterNeeded hit begin " << indexLoc << endl;
-            }
-#endif
             spec = slPtr->spectrum(indexLoc, true);
             if (!spec)
                 throw std::runtime_error("[DemuxHelpers::FindNearbySpectra] Failed to get spectrum from spectrumlists");
@@ -205,12 +182,6 @@ namespace analysis
         while (afterNeeded > 0 && indexLoc != 0 /* hit the beginning of the file */)
         {
             --indexLoc;
-#ifdef _DEBUG_DEMUX_THREADING
-            {
-                boost::lock_guard<boost::mutex> lock(g_debug_mutex);
-                cerr << "FNS::indexLoc afterNeeded " << indexLoc << endl;
-            }
-#endif
             spec = slPtr->spectrum(indexLoc, true);
             if (!spec)
                 throw std::runtime_error("[DemuxHelpers::FindNearbySpectra] Failed to get spectrum from spectrumlists");

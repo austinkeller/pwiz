@@ -37,8 +37,6 @@ namespace analysis{
         processingMethod_.set(MS_data_processing);
         stringstream processingString;
         processingString << "PRISM " << DemuxDataProcessingStrings::kDEMUX_NAME;
-        if (params_.useMultithreading)
-            processingString << " " << DemuxDataProcessingStrings::kDEMUX_THREADING_NAME;
         processingMethod_.userParams.push_back(UserParam(processingString.str()));
     }
 

@@ -65,8 +65,6 @@ namespace analysis {
                 variableFill(false),
                 interpolateRetentionTime(true),
                 optimization(Optimization::NONE),
-                useMultithreading(false),
-                threadLimit(0),
                 minimumWindowSize(0.2)
             {}
 
@@ -100,10 +98,6 @@ namespace analysis {
 
             /// Optimizations can be chosen when experimental design is known
             Optimization optimization;
-
-            bool useMultithreading;
-
-            unsigned int threadLimit;
 
             double minimumWindowSize;
         };

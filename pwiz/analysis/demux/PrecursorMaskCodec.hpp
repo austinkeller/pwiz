@@ -37,14 +37,10 @@ namespace analysis{
         {
             Params() :
             variableFill(false),
-            useMultithreading(false),
             minimumWindowSize(0.2) {}
 
             /// Whether this data acquired with variable fill times or not.
             bool variableFill;
-
-            /// Allows for multi-threaded access by disabling internal mutex blocking
-            bool useMultithreading;
 
             /// This tolerance is used to decide whether window boundaries are aligned on the same point
             double minimumWindowSize;

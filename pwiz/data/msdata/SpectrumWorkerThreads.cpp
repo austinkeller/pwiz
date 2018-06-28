@@ -38,32 +38,6 @@ using namespace pwiz::analysis;
 namespace pwiz {
 namespace msdata {
 
-template <typename T>
-static const T* UnwrapSpectrumList(const SpectrumList* sl)
-{
-    const T* slUnwrappedPtr = dynamic_cast<const T*>(sl);
-    if (slUnwrappedPtr)
-    {
-        auto slWrapperPtr = dynamic_cast<const SpectrumListWrapper*>(sl);
-        while (true)
-        {
-            if (slWrapperPtr)
-            {
-                slUnwrappedPtr = dynamic_cast<const T*>(slWrapperPtr->inner().get());
-                if (slUnwrappedPtr)
-                    break;
-                else
-                {
-                    slWrapperPtr = dynamic_cast<const SpectrumListWrapper*>(slWrapperPtr->inner().get());
-                }
-            }
-            else
-                break;
-        }
-    }
-    return slUnwrappedPtr;
-}
-
 class SpectrumWorkerThreads::Impl
 {
     public:
@@ -85,7 +59,6 @@ class SpectrumWorkerThreads::Impl
         bool isBruker = icPtr.get() && icPtr->hasCVParamChild(MS_Bruker_Daltonics_instrument_model);
 
         bool isDemultiplexed = false;
-        bool useMultithreading = false;
         const boost::shared_ptr<const DataProcessing> dp = sl.dataProcessingPtr();
         if (dp)
         {
@@ -97,18 +70,13 @@ class SpectrumWorkerThreads::Impl
                     if (up.name.find(DemuxDataProcessingStrings::kDEMUX_NAME) != std::string::npos)
                     {
                         isDemultiplexed = true;
-                        if (up.name.find(DemuxDataProcessingStrings::kDEMUX_THREADING_NAME) != std::string::npos)
-                        {
-                            useMultithreading = true;
-                        }
-                        break;
                     }
                 }
                 if (isDemultiplexed) break;
             }
         }
 
-        useThreads_ = !(isBruker || (isDemultiplexed && !useMultithreading)); // Bruker library is not thread-friendly
+        useThreads_ = !(isBruker || (isDemultiplexed)); // Bruker library is not thread-friendly
         //useThreads_ = !(isBruker); // Bruker library is not thread-friendly
 
         if (sl.size() > 0 && useThreads_)

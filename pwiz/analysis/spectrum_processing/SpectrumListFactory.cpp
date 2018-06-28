@@ -822,8 +822,6 @@ SpectrumListPtr filterCreator_demux(const MSData& msd, const string& carg, pwiz:
     demuxParams.regularizeSums = !parseKeyValuePair<LocaleBool>(arg, "noSumNormalize=", !k_defaultDemuxParams.regularizeSums);
     string optimization = parseKeyValuePair<string>(arg, "optimization=", "none");
     demuxParams.interpolateRetentionTime = parseKeyValuePair<LocaleBool>(arg, "interpolateRT=", k_defaultDemuxParams.interpolateRetentionTime);
-    demuxParams.threadLimit = parseKeyValuePair<unsigned int>(arg, "threadLimit=", k_defaultDemuxParams.threadLimit);
-    demuxParams.useMultithreading = parseKeyValuePair<LocaleBool>(arg, "useMultithreading=", k_defaultDemuxParams.useMultithreading);
     demuxParams.minimumWindowSize = parseKeyValuePair<double>(arg, "minWindowSize=", k_defaultDemuxParams.minimumWindowSize);
     bal::trim(arg);
     if (!arg.empty())
@@ -850,8 +848,6 @@ UsageInfo usage_demux = {
     " noSumNormalize=<bool (false)>"
     " optimization=<(none)|overlap_only>"
     " interpolateRT=<bool (true)>"
-    " threadLimit=<int (0)>"
-    " useMultithreading=<bool (false)>"
     " minWindowSize=<real (0.2)>",
     "Separates overlapping or MSX multiplexed spectra into several demultiplexed spectra by inferring from adjacent multiplexed spectra. Optionally handles variable fill times (for Thermo)." };
 
