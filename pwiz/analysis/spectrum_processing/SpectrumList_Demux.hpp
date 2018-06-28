@@ -19,9 +19,6 @@
 
 #ifndef _SPECTRUMLIST_DEMUX_HPP
 #define _SPECTRUMLIST_DEMUX_HPP
-//#ifndef _PROFILE_PERFORMANCE
-//#define _PROFILE_PERFORMANCE
-//#endif
 
 #include "pwiz/data/msdata/SpectrumListWrapper.hpp"
 #include <boost/smart_ptr/scoped_ptr.hpp>
