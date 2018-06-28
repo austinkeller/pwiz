@@ -38,21 +38,10 @@
 #include <boost/make_shared.hpp>
 
 
-#ifdef _PROFILE_PERFORMANCE
-#include <chrono>
-#include <iostream>
-#endif
-
-
 namespace pwiz {
 namespace analysis {
 
     using namespace msdata;
-#ifdef _PROFILE_PERFORMANCE
-    using std::chrono::high_resolution_clock;
-    using std::chrono::duration_cast;
-    using std::chrono::microseconds;
-#endif
 
 
     class SpectrumList_Demux::Impl
@@ -302,10 +291,6 @@ namespace analysis {
         debugWriter_(boost::make_shared<DemuxDebugWriter>("DemuxDebugOutput.log"))
 #endif
     {
-#ifdef _PROFILE_PERFORMANCE
-        auto t1 = high_resolution_clock::now();
-#endif
-
         switch (params_.optimization)
         {
         case Params::Optimization::NONE:
@@ -318,24 +303,9 @@ namespace analysis {
             break;
         default: break;
         }
-#ifdef _PROFILE_PERFORMANCE
-        // add function to be timed here
-        auto t2 = high_resolution_clock::now();
-        auto duration = duration_cast<microseconds >(t2 - t1).count();
-        std::cout << "Build PrecursorMaskCodec (ReadDemuxScheme()): " << duration << endl;
-#endif
 
-#ifdef _PROFILE_PERFORMANCE
-        t1 = high_resolution_clock::now();
-#endif
         // Generate the IndexMapper using the chosen IPrecursorMaskCodec
         indexMapper_ = boost::make_shared<IndexMapper>(inner, *pmc_);
-#ifdef _PROFILE_PERFORMANCE
-        // add function to be timed here
-        t2 = high_resolution_clock::now();
-        duration = duration_cast<microseconds >(t2 - t1).count();
-        std::cout << "Build IndexMapper: " << duration << endl;
-#endif
         // Use a SpectrumListCache since we expect to request the same spectra multiple times to extract all demux spectra before moving to the next
         sl_ = boost::make_shared<SpectrumListCache>(inner, MemoryMRUCacheMode_MetaDataAndBinaryData, 1000);
         // Record the processing method that will be used to demultiplex
@@ -349,9 +319,6 @@ namespace analysis {
 
     PWIZ_API_DECL SpectrumPtr SpectrumList_Demux::Impl::spectrum(size_t index, bool getBinaryData) const
     {
-#ifdef _PROFILE_PERFORMANCE
-        std::cout << endl; // add newline to not overlap with normal output
-#endif
         // TODO -- make this work for getBinaryData is false
         const IndexMapper::DemuxRequestIndex& demuxRequest = indexMapper_->indexMap[index];
         if (demuxRequest.msLevel != 2)
@@ -394,47 +361,20 @@ namespace analysis {
         }
         else
         {
-#ifdef _PROFILE_PERFORMANCE
-            auto t1 = high_resolution_clock::now();
-#endif
             // Figure out which spectra to include in the system of equations to demux
             vector<size_t> muxIndices;
             demux_->GetMatrixBlockIndices(request.spectrumOriginalIndex, muxIndices, params_.demuxBlockExtra);
-#ifdef _PROFILE_PERFORMANCE
-            // add function to be timed here
-            auto t2 = high_resolution_clock::now();
-            auto duration = duration_cast<microseconds >(t2 - t1).count();
-            cout << "GetMatrixBlockIndices: " << duration << endl;
-#endif
 
-#ifdef _PROFILE_PERFORMANCE
-            t1 = high_resolution_clock::now();
-#endif
             // Generate matrices for least squares solve
             MatrixPtr masks;
             MatrixPtr signal;
             demux_->BuildDeconvBlock(request.spectrumOriginalIndex, muxIndices, masks, signal);
-#ifdef _PROFILE_PERFORMANCE
-            // add function to be timed here
-            t2 = high_resolution_clock::now();
-            duration = duration_cast<microseconds >(t2 - t1).count();
-            cout << "BuildDeconvBlock: " << duration << endl;
-#endif
 
-#ifdef _PROFILE_PERFORMANCE
-            t1 = high_resolution_clock::now();
-#endif
             // Perform the least squares solve
             solution.reset(new MatrixType(masks->cols(), signal->cols()));
             demuxSolver_->Solve(masks, signal, solution);
             lastSolved_->solution = solution;
             lastSolved_->origSpecIndex = request.spectrumOriginalIndex;
-#ifdef _PROFILE_PERFORMANCE
-            // add function to be timed here
-            t2 = high_resolution_clock::now();
-            duration = duration_cast<microseconds >(t2 - t1).count();
-            cout << "Solve: " << duration << endl;
-#endif
 
 #ifdef _USE_DEMUX_DEBUG_WRITER
             if (debugWriter_->IsOpen())

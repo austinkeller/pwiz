@@ -21,9 +21,6 @@
 #define _DEMUXSOLVER_HPP
 
 #include "DemuxTypes.hpp"
-#ifdef _PROFILE_PERFORMANCE
-#include <iostream>
-#endif
 
 namespace pwiz {
 namespace analysis {
@@ -63,43 +60,17 @@ namespace analysis {
         /// @param[in] numIters The maximum number of iterations allowed for convergence
         /// @param[in] eps Epsilon value for convergence criterion of NNLS solver
          NNLSSolver(int numIters = 50, double eps = 1e-10) : numIters_(numIters), eps_(eps)
-#ifdef _PROFILE_PERFORMANCE
-#ifdef _PROFILE_SOLVER_CONVERGENCE
-
-             , iterationCaching_(false)
-
-#endif
-#endif
          {}
         
         /// Implementation of DemuxSolver interface
         void Solve(const MatrixPtr& masks, const MatrixPtr& signal, MatrixPtr& solution) const override;
-
-#ifdef _PROFILE_PERFORMANCE
-#ifdef _PROFILE_SOLVER_CONVERGENCE
-
-        void setIterationCaching(bool on);
-        void writeIterations(std::ostream& out);
-
-#endif
-#endif
 
     private:
      
         int numIters_; ///< maximum number of iterations allowed for convergence
          
         double eps_; ///< tolerance for convergence
-
-#ifdef _PROFILE_PERFORMANCE
-#ifdef _PROFILE_SOLVER_CONVERGENCE
-
-        bool iterationCaching_;
-        std::vector<int> numItersUsed_;
-
-#endif
-#endif
     };
-
 } // namespace analysis 
 } // namespace pwiz
 #endif // _DEMUXSOLVER_HPP
