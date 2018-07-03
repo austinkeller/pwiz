@@ -115,11 +115,11 @@ namespace analysis
         return true;
     }
 
-    bool FindNearbySpectra(std::vector<size_t>& spectraIndices, msdata::SpectrumList_const_ptr slPtr, size_t centerIndex, size_t numSpectraToFind, size_t stride)
+    bool FindNearbySpectra(std::vector<size_t>& spectraIndices, boost::shared_ptr<const msdata::SpectrumList> slPtr, size_t centerIndex, size_t numSpectraToFind, size_t stride)
     {
         if (centerIndex >= slPtr->size())
             throw std::out_of_range("Spectrum index not in range of the given spectrum list");
-        msdata::Spectrum_const_ptr spec = slPtr->spectrum(centerIndex, true);
+        boost::shared_ptr<const msdata::Spectrum> spec = slPtr->spectrum(centerIndex, true);
         if (!spec)
             throw std::runtime_error("[DemuxHelpers::FindNearbySpectra] Failed to get spectrum from spectrumlists");
         if (spec->cvParam(cv::MS_ms_level).valueAs<int>() != 2)

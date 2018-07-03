@@ -22,6 +22,7 @@
 
 #include "IDemultiplexer.hpp"
 #include "DemuxHelpers.hpp"
+#include "pwiz/utility/chemistry/MZTolerance.hpp"
 
 namespace pwiz {
 namespace analysis {
@@ -35,8 +36,8 @@ namespace analysis {
         struct Params
         {
             Params() :
-            
             massError(10.0, pwiz::chemistry::MZTolerance::PPM),
+            applyWeighting(true),
             interpolateRetentionTime(true)
             {}
             

@@ -19,6 +19,7 @@
 
 #include "pwiz/analysis/demux/PrecursorMaskCodec.hpp"
 #include "pwiz/data/msdata/examples.hpp"
+#include "pwiz/analysis/demux/DemuxTestData.hpp"
 #include "pwiz/utility/misc/Std.hpp"
 #include "pwiz/utility/misc/unit.hpp"
 
@@ -33,10 +34,13 @@ public:
     void Run()
     {
         SetUp();
-        TooFewSpectraToDetermineTheNumberOfPrecursorWindowsTest();
-        NumberOfPrecursorsIsVaryingBetweenIndividualMS2ScansTest();
-        MS2SpectrumIsMissingPrecursorInformationTest();
-        NoMS2ScansFoundForThisExperimentTest();
+
+        SingleOverlapTest();
+        TooFewSpectraToDetermineTheNumberOfPrecursorWindowsErrorTest();
+        NumberOfPrecursorsIsVaryingBetweenIndividualMS2ScansErrorTest();
+        MS2SpectrumIsMissingPrecursorInformationErrorTest();
+        NoMS2ScansFoundForThisExperimentErrorTest();
+
         TearDown();
     }
 
@@ -64,7 +68,7 @@ protected:
     const int MS2_INDEX_1 = 3;
     const int MS1_INDEX_2 = 4;
 
-    void TooFewSpectraToDetermineTheNumberOfPrecursorWindowsTest()
+    void TooFewSpectraToDetermineTheNumberOfPrecursorWindowsErrorTest()
     {
         // Generate test data
         MSDataPtr msd = boost::make_shared<MSData>();
@@ -78,13 +82,13 @@ protected:
             "IdentifyCycle() Could not determine demultiplexing scheme. Too few spectra to determine the number of precursor windows.");
     }
 
-    void NumberOfPrecursorsIsVaryingBetweenIndividualMS2ScansTest()
+    void NumberOfPrecursorsIsVaryingBetweenIndividualMS2ScansErrorTest()
     {
         // Generate test data
         MSDataPtr msd = boost::make_shared<MSData>();
         examples::initializeTiny(*msd);
         auto spectrumListPtr = msd->run.spectrumListPtr;
-        
+
         // Make the number of precursors > 1 but allow the number of precursors to vary
         msd = boost::make_shared<MSData>();
         examples::initializeTiny(*msd);
@@ -114,7 +118,7 @@ protected:
             "IdentifyCycle() Number of precursors is varying between individual MS2 scans. Cannot infer demultiplexing scheme.");
     }
 
-    void MS2SpectrumIsMissingPrecursorInformationTest()
+    void MS2SpectrumIsMissingPrecursorInformationErrorTest()
     {
         // Generate test data
         MSDataPtr msd = boost::make_shared<MSData>();
@@ -134,7 +138,7 @@ protected:
             "IdentifyCycle() MS2 spectrum is missing precursor information.");
     }
 
-    void NoMS2ScansFoundForThisExperimentTest()
+    void NoMS2ScansFoundForThisExperimentErrorTest()
     {
         // Generate test data
         MSDataPtr msd = boost::make_shared<MSData>();
@@ -142,9 +146,6 @@ protected:
         auto spectrumListPtr = msd->run.spectrumListPtr;
 
         // Remove all MS2 spectra
-        msd = boost::make_shared<MSData>();
-        examples::initializeTiny(*msd);
-        spectrumListPtr = msd->run.spectrumListPtr;
         shared_ptr<SpectrumListSimple> spectrumListSimple(new SpectrumListSimple);
         spectrumListSimple->dp = boost::make_shared<DataProcessing>(*spectrumListPtr->dataProcessingPtr());
         spectrumListSimple->spectra.push_back(spectrumListPtr->spectrum(MS1_INDEX_0));
@@ -160,22 +161,64 @@ protected:
             "IdentifyCycle() No MS2 scans found for this experiment.");
     }
 
-    // Test non-multiplexed spectra. This should simply return the input spectra.
+    // Test non-multiplexed spectra. This should return the input spectra unchanged, but it would also be acceptable to just return an error to limit code complexity.
+    // TODO This feature would need to be added
     void BasicDIATest()
     {
         //TODO
     }
 
-    void OverlapTest()
+    // Test the simple case where we have a single overlap per spectrum. This is what Jarrett's published method describes.
+    void SingleOverlapTest()
     {
-        //TODO
+        MSDataPtr msd = boost::make_shared<MSData>();
+        auto paramFactory = []()
+        {
+            test::SimulatedDemuxParams params;
+            params.numCycles = 5;
+            params.numMs2ScansPerCycle = 25;
+            params.numOverlaps = 1;
+            params.numPrecursorsPerSpectrum = 1;
+            return params;
+        };
+
+        const test::SimulatedDemuxParams params = paramFactory();
+        test::initializeMSDDemux(*msd, params);
+        auto spectrumListPtr = msd->run.spectrumListPtr;
+
+        PrecursorMaskCodec::Params pmcParams;
+        pmcParams.variableFill = false;
+        PrecursorMaskCodec pmc(spectrumListPtr, pmcParams);
+        unit_assert_operator_equal(pmc.GetOverlapsPerCycle(), params.numOverlaps + 1);
+        unit_assert_operator_equal(pmc.GetOverlapsPerCycle(), 2);
+        unit_assert_operator_equal(pmc.GetPrecursorsPerSpectrum(), params.numPrecursorsPerSpectrum);
+        unit_assert_operator_equal(pmc.GetPrecursorsPerSpectrum(), 1);
+        unit_assert_operator_equal(pmc.GetSpectraPerCycle(), params.numMs2ScansPerCycle * (params.numOverlaps + 1));
+        unit_assert_operator_equal(pmc.GetSpectraPerCycle(), 50);
+        unit_assert_operator_equal(pmc.GetNumDemuxWindows(), params.numMs2ScansPerCycle * (params.numOverlaps + 1) + 1);
+        unit_assert_operator_equal(pmc.GetNumDemuxWindows(), 51);
+
+        // Test ability to demultiplex by generating data from the same elution scheme with twice the selectivity and then compare to the demultiplexed data
+        // TODO
     }
+
+    // Test where there are two overlaps per spectrum
+    // TODO This feature would need to be added
+    void DoubleOverlapTest()
+    {
+        //TODO Extend or copy the code from the single overlap test in order to validate this test.
+        /* Note: It may be necessary to allow for more noise in the reconstruction accuracy (when comparing the theoretical high-selectivity spectra
+         * to the demultiplexed spectra). Double overlapping hasn't been tested before and may give poorer performance than single overlapping
+         */
+    }
+
 
     void MSXTest()
     {
         //TODO
     }
 
+    // Test that gaps between precursors gives an error
     void GapsBetweenPrecursorsTest()
     {
         //TODO

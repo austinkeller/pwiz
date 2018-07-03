@@ -54,7 +54,7 @@ namespace analysis {
     void OverlapDemultiplexer::BuildDeconvBlock(size_t index, const vector<size_t>& muxIndices, MatrixPtr& masks, MatrixPtr& signal) const
     {
         if (!sl_ || !pmc_)
-            throw runtime_error("BuildDeconvBlock() Null pointer to SpectrumList and/or IPrecursorMaskCodec. MSXDemultiplexer may not have been initialized.");
+            throw runtime_error("BuildDeconvBlock() Null pointer to SpectrumList and/or IPrecursorMaskCodec. OverlapDemultiplexer may not have been initialized.");
 
         // get the list of peaks to demultiplex
         Spectrum_const_ptr deconvSpectrum = sl_->spectrum(index, true);

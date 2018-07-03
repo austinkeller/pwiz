@@ -22,6 +22,7 @@
 
 #include "IDemultiplexer.hpp"
 #include "DemuxHelpers.hpp"
+#include "pwiz/utility/chemistry/MZTolerance.hpp"
 
 namespace pwiz {
 namespace analysis {

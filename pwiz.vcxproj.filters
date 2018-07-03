@@ -542,6 +542,7 @@
     <ClCompile Include="pwiz\data\msdata\SpectrumList_mz5.cpp" />
     <ClCompile Include="pwiz\data\msdata\SpectrumList_mz5_Test.cpp" />
     <ClCompile Include="pwiz\data\msdata\SpectrumWorkerThreads.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxTestData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\boost_aux\boost\nowide\args.hpp" />
@@ -961,5 +962,6 @@
     <ClInclude Include="pwiz\data\msdata\SpectrumList_MSn.hpp" />
     <ClInclude Include="pwiz\data\msdata\SpectrumList_mz5.hpp" />
     <ClInclude Include="pwiz\data\msdata\SpectrumWorkerThreads.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\DemuxTestData.hpp" />
   </ItemGroup>
 </Project>

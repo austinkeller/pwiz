@@ -22,7 +22,14 @@
 
 #include "pwiz/utility/misc/Std.hpp"
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include "pwiz/data/msdata/MSData.hpp"
 
+
+namespace pwiz {
+namespace msdata {
+struct MSData;
+}
+}
 
 namespace pwiz
 {
@@ -31,174 +38,213 @@ namespace analysis
 namespace test
 {
 
-    struct SimulatedDemuxParams
+struct SimulatedDemuxParams
+{
+    size_t numPrecursorsPerSpectrum = 3;
+    size_t numOverlaps = 1;
+    size_t numCycles = 10;
+    size_t numMs2ScansPerCycle = 25;
+    double startPrecursorMz = 400.0;
+    double endPrecursorMz = 1000.0;
+    bool overlapOnly = false;
+    int randomDataSeed = 0;
+};
+
+class IScanEvent
+{
+public:
+    virtual ~IScanEvent() {}
+    virtual int mslevel() const = 0;
+};
+
+class AbstractMSScan : public IScanEvent
+{
+public:
+    AbstractMSScan(double startProductMz, double endProductMz) :
+        _startProductMz(startProductMz),
+        _endProductMz(endProductMz) {}
+    virtual ~AbstractMSScan() {}
+    int mslevel() const override = 0;
+    double startProductMz() const { return _startProductMz; }
+    double endProductMz() const { return _endProductMz; }
+
+protected:
+    double _startProductMz;
+    double _endProductMz;
+};
+
+class MS1Scan : public AbstractMSScan
+{
+public:
+    MS1Scan(double startProductMz, double endProductMz);
+    virtual ~MS1Scan() {}
+    int mslevel() const final { return 1; }
+};
+
+class MS2Scan : public AbstractMSScan
+{
+public:
+    MS2Scan(double startProductMz, double endProductMz);
+    virtual ~MS2Scan() {}
+    int mslevel() const final { return 2; }
+    boost::shared_ptr<const vector<msdata::Precursor>> precursors() const;
+    void setPrecursors(const vector<pair<double, double>>& mzCentersAndWidths);
+
+private:
+    boost::shared_ptr<vector<msdata::Precursor>> _precursors;
+};
+
+class IAcquisitionScheme
+{
+public:
+    virtual ~IAcquisitionScheme() {}
+
+    virtual size_t numScans() const = 0;
+    // Number of precursors per scan
+    virtual size_t numPrecursors() const = 0;
+    virtual boost::shared_ptr<IScanEvent> scan(size_t scanNum) const = 0;
+};
+
+class SimpleAcquisitionScheme : public IAcquisitionScheme
+{
+public:
+    struct Params
     {
-        size_t numPrecursors = 3;
-        size_t numOverlaps = 1;
-        size_t numCycles = 10;
-        size_t numDemux = 9;
-        bool overlapOnly = false;
-        int randomDataSeed = 0;
+        size_t ms2ScansPerCycle = 9;
+        double startPrecursorMz = 500.0;
+        double endPrecursorMz = 900.0;
+        double startProductMz = 400.0;
+        double endProductMz = 1200.0;
+        int randomSeed = 0;
     };
+    SimpleAcquisitionScheme(Params params = Params());
+    virtual ~SimpleAcquisitionScheme() {}
+    size_t numScans() const override;
+    size_t numPrecursors() const override;
+    boost::shared_ptr<IScanEvent> scan(size_t scanNum) const override;
+private:
+    std::vector<boost::shared_ptr<IScanEvent>> _scans;
+};
 
-    class IScanEvent
+class OverlapAcquisitionScheme : public IAcquisitionScheme
+{
+public:
+    struct Params
     {
-    public:
-        IScanEvent();
-        virtual ~IScanEvent();
-        virtual int mslevel() const = 0;
+        size_t ms2ScansPerCycle = 9;
+        size_t overlapsPerSpectrum = 1;
+        double startPrecursorMz = 500.0;
+        double endPrecursorMz = 900.0;
+        double startProductMz = 400.0;
+        double endProductMz = 1200.0;
+        int randomSeed = 0;
     };
+    OverlapAcquisitionScheme(Params params = Params());
+    virtual ~OverlapAcquisitionScheme() {}
+    size_t numScans() const override;
+    size_t numPrecursors() const override;
+    boost::shared_ptr<IScanEvent> scan(size_t scanNum) const override;
+private:
+    std::vector<boost::shared_ptr<IScanEvent>> _scans;
+    Params _params;
+};
 
-    class MS1Scan : public IScanEvent
-    {
-    public:
-        MS1Scan();
-        virtual ~MS1Scan();
+class IAnalyte
+{
+public:
+    virtual ~IAnalyte() {}
+    virtual double precursorMz() const = 0;
+    virtual boost::shared_ptr<vector<double>> fragmentMzs() const = 0;
+    virtual boost::shared_ptr<vector<double>> fragmentRelIntensities() const = 0;
+};
 
-        int mslevel() const final
-        {
-            return 1;
-        }
-    };
+class SimpleAnalyte : public IAnalyte
+{
+public:
+    SimpleAnalyte(
+        int randomSeed = 0,
+        double startPrecursorMz = 400.0,
+        double endPrecursorMz = 900.0,
+        double startFragmentMz = 200.0,
+        double endFragmentMz = 1200.0);
+    virtual ~SimpleAnalyte() {}
+    double precursorMz() const override;
+    boost::shared_ptr<vector<double>> fragmentMzs() const override;
+    boost::shared_ptr<vector<double>> fragmentRelIntensities() const override;
+private:
+    double _precursorMz;
+    boost::shared_ptr<vector<double>> _fragmentMzs;
+    boost::shared_ptr<vector<double>> _fragmentRelintensities;
+    int _randomSeed;
+};
 
-    class MS2Scan : public IScanEvent
-    {
-    public:
-        MS2Scan();
-        virtual ~MS2Scan();
+class IElutionScheme
+{
+public:
+    virtual ~IElutionScheme() {}
+    // Returns the analyte index and the number of ions per millisecond for that analyte
+    virtual vector<pair<size_t, double>> indexedAnalyteIntensity(double time) const = 0;
+    virtual boost::shared_ptr<IAnalyte> analyte(size_t index) const = 0;
+};
 
-        int mslevel() const final
-        {
-            return 2;
-        }
+class RegularSineElutionScheme : public IElutionScheme
+{
+public:
+    RegularSineElutionScheme();
+    virtual ~RegularSineElutionScheme() {}
+    vector<pair<size_t, double>> indexedAnalyteIntensity(double time) const override;
+    boost::shared_ptr<IAnalyte> analyte(size_t index) const override;
 
-        size_t numPrecursors() const;
-        msdata::Precursor getPrecursor(size_t index) const;
-        void setPrecursors(const vector<pair<double, double>>& mzCentersAndWidths);
+    void setSigma(double sigmaInTime);
+    void setPeriod(double timeBetweenPeaks);
+    void setSinePeriod(double timeBetweenLongOscillations);
 
-    private:
-        vector<msdata::Precursor> _precursors;
-    };
+private:
+    double intensity(double time) const;
+    /// Index for the eluting peak. This can be used to determine which analyte is eluting.
+    size_t peakIndex(double time) const;
 
-    typedef vector<IScanEvent> AcquisitionScheme;
+    mutable std::map<size_t, boost::shared_ptr<IAnalyte>> _analyteCache;
+    double _sigmaInTime;
+    double _timeBetweenPeaks;
+    double _timeBetweenLongOscillations;
+};
 
-    class IAcquisitionScheme
-    {
-    public:
-        virtual ~IAcquisitionScheme() = 0 {}
+class SimulatedSpectrum
+{
+public:
+    SimulatedSpectrum(boost::shared_ptr<IScanEvent> scan);
+    int msLevel() const;
+    boost::shared_ptr<vector<double>> mzs() const;
+    void setMzs(boost::shared_ptr<vector<double>> mzs);
+    boost::shared_ptr<vector<double>> intensities() const;
+    void setIntensities(boost::shared_ptr<vector<double>> intensities);
+    boost::shared_ptr<IScanEvent> scan() const;
+private:
+    boost::shared_ptr<IScanEvent> _scan;
+    boost::shared_ptr<vector<double>> _mzs;
+    boost::shared_ptr<vector<double>> _intensities;
+};
 
-        virtual size_t numScans() const = 0;
-        virtual size_t numPrecursors() const = 0;
-        virtual boost::shared_ptr<IScanEvent> scan(size_t scanNum) const = 0;
-    };
+class SimulatedMassSpec
+{
+public:
+    SimulatedMassSpec();
+    boost::shared_ptr<SimulatedSpectrum> nextScan();
+    void initialize(boost::shared_ptr<IAcquisitionScheme> acquisitionScheme, boost::shared_ptr<IElutionScheme> elutionScheme);
+    void setRunDuration(double runDuration);
+    double runDurationPerCycle() const;
 
-    class SimpleAcquisitionScheme : public IAcquisitionScheme
-    {
-    public:
-        SimpleAcquisitionScheme(
-            size_t ms2ScansPerCycle = 9,
-            double startPrecursorMz = 500.0,
-            double endPrecursorMz = 900.0,
-            double startProductMz = 400.0,
-            double endProductMz = 1200.0,
-            int randomSeed = 0);
-        size_t numScans() const override;
-        size_t numPrecursors() const override;
-        boost::shared_ptr<IScanEvent> scan(size_t scanNum) const override;
-    private:
-        std::vector<IScanEvent> _scans;
-    };
+private:
+    boost::shared_ptr<IElutionScheme> _elutionScheme;
+    boost::shared_ptr<IAcquisitionScheme> _acquisitionScheme;
+    double _maxRunDuration;
+    double _scanRate;
+    size_t _currentScanNum;
+};
 
-    class IAnalyte
-    {
-    public:
-        virtual ~IAnalyte() = 0 {}
-        virtual double precursorMz() const = 0;
-        virtual boost::shared_ptr<vector<double>> fragmentMzs() const = 0;
-        virtual boost::shared_ptr<vector<double>> fragmentRelIntensities() const = 0;
-    };
-
-    class SimpleAnalyte : public IAnalyte
-    {
-    public:
-        SimpleAnalyte(
-            int randomSeed = 0,
-            double startPrecursorMz = 400.0,
-            double endPrecursorMz = 900.0,
-            double startFragmentMz = 200.0,
-            double endFragmentMz = 1200.0);
-        virtual ~SimpleAnalyte() {}
-        double precursorMz() const override;
-        boost::shared_ptr<vector<double>> fragmentMzs() const override;
-        boost::shared_ptr<vector<double>> fragmentRelIntensities() const override;
-    private:
-        double _precursorMz;
-        boost::shared_ptr<vector<double>> _fragmentMzs;
-        boost::shared_ptr<vector<double>> _fragmentRelintensities;
-        int _randomSeed;
-    };
-
-    class IElutionScheme
-    {
-    public:
-        virtual ~IElutionScheme() = 0 {}
-        virtual vector<pair<size_t, double>> indexedAnalyteIntensity(double time) const = 0;
-        virtual boost::shared_ptr<IAnalyte> analyte(size_t index) const = 0;
-    };
-
-    class RegularSineElutionScheme : public IElutionScheme
-    {
-    public:
-        RegularSineElutionScheme();
-        virtual ~RegularSineElutionScheme() {};
-        vector<pair<size_t, double>> indexedAnalyteIntensity(double time) const override;
-        boost::shared_ptr<IAnalyte> analyte(size_t index) const override;
-
-        void setSigma(double sigmaInTime);
-        void setPeriod(double timeBetweenPeaks);
-        void setSinePeriod(double timeBetweenLongOscillations);
-
-    private:
-        double intensity(double time) const;
-        /// Index for the eluting peak. This can be used to determine which analyte is eluting.
-        size_t peakIndex(double time) const;
-
-        mutable std::map<size_t, boost::shared_ptr<IAnalyte>> _analyteCache;
-        double _sigmaInTime;
-        double _timeBetweenPeaks;
-        double _timeBetweenLongOscillations;
-    };
-
-    class SimulatedSpectrum
-    {
-    public:
-        SimulatedSpectrum();
-        int msLevel() const;
-        double precursorMz() const;
-        boost::shared_ptr<vector<double>> mzs() const;
-        boost::shared_ptr<vector<double>> intensities() const;
-        boost::shared_ptr<IScanEvent> scan() const;
-    private:
-        boost::shared_ptr<IScanEvent> _scan;
-    };
-
-    class SimulatedMassSpec
-    {
-    public:
-        SimulatedMassSpec();
-        boost::shared_ptr<SimulatedSpectrum> nextScan();
-        void initialize(const IAcquisitionScheme& acquisitionScheme, const IElutionScheme& elutionScheme);
-
-    private:
-        boost::shared_ptr<IElutionScheme> _elutionScheme;
-        boost::shared_ptr<IAcquisitionScheme> _acquisitionScheme;
-        double _minRunDuration;
-        double _scanRate;
-        size_t _currentScanNum;
-    };
-
-    void initializeMSDDemux(msdata::MSData& msd, SimulatedDemuxParams params = SimulatedDemuxParams());
-
+void initializeMSDDemux(msdata::MSData& msd, SimulatedDemuxParams params = SimulatedDemuxParams());
+boost::shared_ptr<IAcquisitionScheme> acquisitionSchemeFactory(SimulatedDemuxParams params);
 } // namespace test
 } // namespace analysis
 } // namespace pwiz

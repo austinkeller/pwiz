@@ -141,6 +141,7 @@
     <ClCompile Include="pwiz\analysis\demux\DemuxHelpersTest.cpp" />
     <ClCompile Include="pwiz\analysis\demux\DemuxSolver.cpp" />
     <ClCompile Include="pwiz\analysis\demux\DemuxSolverTest.cpp" />
+    <ClCompile Include="pwiz\analysis\demux\DemuxTestData.cpp" />
     <ClCompile Include="pwiz\analysis\demux\FSDemux.cpp" />
     <ClCompile Include="pwiz\analysis\demux\MatrixIO.cpp" />
     <ClCompile Include="pwiz\analysis\demux\MatrixIOTest.cpp" />
@@ -946,6 +947,7 @@
     <ClInclude Include="pwiz\analysis\demux\DemuxDebugWriter.hpp" />
     <ClInclude Include="pwiz\analysis\demux\DemuxHelpers.hpp" />
     <ClInclude Include="pwiz\analysis\demux\DemuxSolver.hpp" />
+    <ClInclude Include="pwiz\analysis\demux\DemuxTestData.hpp" />
     <ClInclude Include="pwiz\analysis\demux\DemuxTypes.hpp" />
     <ClInclude Include="pwiz\analysis\demux\EnumConstantNotPresentException.hpp" />
     <ClInclude Include="pwiz\analysis\demux\IDemultiplexer.hpp" />
