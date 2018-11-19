@@ -39,6 +39,7 @@ namespace pwiz.SkylineTestFunctional
     public class FiguresOfMeritTest : AbstractFunctionalTest
     {
         [TestMethod]
+        [Timeout(36000000)]  // These can take a long time in code coverage mode
         public void TestFiguresOfMerit()
         {
             TestFilesZip = @"TestFunctional\FiguresOfMeritTest.zip";
@@ -48,7 +49,7 @@ namespace pwiz.SkylineTestFunctional
         protected override void DoTest()
         {
             int seed = (int) DateTime.Now.Ticks;
-            Console.WriteLine("FiguresOfMeritTest: using random seed {0}", seed);
+            // Console.WriteLine("FiguresOfMeritTest: using random seed {0}", seed);
             var random = new Random(seed);
             RunUI(()=>SkylineWindow.OpenFile(TestFilesDir.GetTestPath("FiguresOfMeritTest.sky")));
             var documentGrid = ShowDialog<DocumentGridForm>(() => SkylineWindow.ShowDocumentGrid(true));

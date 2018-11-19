@@ -397,7 +397,7 @@ int main(int argc, char* argv[])
 
     try
     {
-        auto tester = DemuxHelpersTest();
+        DemuxHelpersTest tester;
         tester.Run();
     }
     catch (exception& e)
