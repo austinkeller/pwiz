@@ -6,6 +6,12 @@
   See header file for version history and test vectors.
 */
 
+// added endianization check -- dk
+#include "endian.hpp"
+#ifdef PWIZ_BIG_ENDIAN
+#define SHA1_BIG_ENDIAN // for SHA1.h
+#endif // PWIZ_BIG_ENDIAN
+
 // If compiling with MFC, you might want to add #include "StdAfx.h"
 
 #define _CRT_SECURE_NO_WARNINGS
