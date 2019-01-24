@@ -25,6 +25,8 @@ namespace pwiz {
 namespace analysis {
     SpectrumPeakExtractor::SpectrumPeakExtractor(const std::vector<double>& peakMzList, const pwiz::chemistry::MZTolerance& massError)
     {
+        if (peakMzList.empty())
+            throw std::runtime_error(__FUNCTION__ " Given m/z array for extracting peaks is empty");
         _numPeakBins = peakMzList.size();
         _ranges = boost::shared_array< std::pair<double, double> >(new std::pair<double, double>[_numPeakBins]);
         _maxDelta = 0.0;

@@ -19,6 +19,7 @@
 #include "SpectrumList_Sonar.hpp"
 #include "pwiz/analysis/demux/DemuxHelpers.hpp"
 #include <boost/format.hpp>
+//#include "pwiz/utility/bindings/CLI/common/ParamTypes.hpp"
 
 namespace pwiz
 {
@@ -107,6 +108,19 @@ namespace analysis
         return spectrum(index, true);
     }
 
+    inline void replaceCVParam(vector<data::CVParam>& cvParams, cv::CVID oldCVID, cv::CVID newCVID)
+    {
+        vector<data::CVParam>::iterator it = find_if(cvParams.begin(), cvParams.end(), data::CVParamIs(oldCVID));
+        if (it != cvParams.end())
+        {
+            it->cvid = newCVID;
+        }
+        else
+        {
+            cvParams.push_back(data::CVParam(newCVID));
+        }
+    }
+
     PWIZ_API_DECL msdata::SpectrumPtr SpectrumList_Sonar::Impl::spectrum(size_t index, bool getBinaryData) const
     {
         auto spectrum = sl_->spectrum(index, getBinaryData);
@@ -121,6 +135,9 @@ namespace analysis
                 if (mods.msLevel == 2 && cvParam.cvid == cv::MS_MS1_spectrum)
                     cvParam.cvid = cv::MS_MSn_spectrum;
             }
+
+            // Label this as a profile spectrum
+            replaceCVParam(spectrum->cvParams, cv::MS_centroid_spectrum, cv::MS_profile_spectrum);
 
             if (mods.msLevel == 2)
                 spectrum->precursors.push_back(precursors_.at(precursorIndexMap_.at(index)));
@@ -252,8 +269,8 @@ namespace analysis
         for (size_t i = 0; i < cycleSize_; ++i)
         {
             double center = sonarOffset * i + sonarMzRangeLower_;
-            double lower = center - sonarWindowSize_ / 2.0;
-            double upper = center + sonarWindowSize_ / 2.0;
+            //double lower = center - sonarWindowSize_ / 2.0;
+            //double upper = center + sonarWindowSize_ / 2.0;
             auto p = msdata::Precursor(center);
             p.isolationWindow.set(cv::MS_isolation_window_target_m_z, to_string(center), cv::MS_m_z);
             p.isolationWindow.set(cv::MS_isolation_window_lower_offset, to_string(sonarWindowSize_ / 2.0), cv::MS_m_z);
