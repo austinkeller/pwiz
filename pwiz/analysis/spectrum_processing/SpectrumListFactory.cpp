@@ -39,6 +39,7 @@
 #include "pwiz/analysis/spectrum_processing/SpectrumList_MetadataFixer.hpp"
 #include "pwiz/analysis/spectrum_processing/SpectrumList_TitleMaker.hpp"
 #include "pwiz/analysis/spectrum_processing/SpectrumList_Demux.hpp"
+#include "pwiz/analysis/spectrum_processing/SpectrumList_Sonar.hpp"
 #include "pwiz/analysis/spectrum_processing/PrecursorMassFilter.hpp"
 #include "pwiz/analysis/spectrum_processing/ThresholdFilter.hpp"
 #include "pwiz/analysis/spectrum_processing/SpectrumList_ZeroSamplesFilter.hpp"
@@ -842,6 +843,32 @@ UsageInfo usage_demux = {
     " minWindowSize=<real (0.2)>",
     "Separates overlapping or MSX multiplexed spectra into several demultiplexed spectra by inferring from adjacent multiplexed spectra. Optionally handles variable fill times (for Thermo)." };
 
+SpectrumListPtr filterCreator_sonar(const MSData& msd, const string& carg, pwiz::util::IterationListenerRegistry* ilr)
+{
+    string arg = carg;
+
+    SpectrumList_Sonar::Params sonarParams;
+    sonarParams.startMass = parseKeyValuePair<double>(arg, "startMass=", sonarParams.startMass);
+    sonarParams.endMass = parseKeyValuePair<double>(arg, "endMass=", sonarParams.endMass);
+    sonarParams.windowSize = parseKeyValuePair<double>(arg, "windowSize=", sonarParams.windowSize);
+
+    bal::trim(arg);
+    if (!arg.empty())
+        throw runtime_error("[demultiplex] unhandled text remaining in argument string: \"" + arg + "\"");
+
+    if (sonarParams.startMass <= 0 ||
+        sonarParams.endMass <= 0 ||
+        sonarParams.windowSize < 0)
+    {
+        cerr << "startMass, endMass, and windowSize must be positive real numbers; demuxBlockExtra must be a positive real number or 0" << endl;
+        return SpectrumListPtr();
+    }
+
+    return SpectrumListPtr(new SpectrumList_Sonar(msd.run.spectrumListPtr, sonarParams));
+}
+UsageInfo usage_sonar = { "add options here",
+"Adds SONAR metadata necessary for demultiplexing" };
+
 SpectrumListPtr filterCreator_precursorRefine(const MSData& msd, const string& arg, pwiz::util::IterationListenerRegistry* ilr)
 {
     return SpectrumListPtr(new SpectrumList_PrecursorRefine(msd));
@@ -1515,6 +1542,7 @@ JumpTableEntry jumpTable_[] =
     {"MS2Deisotope", usage_MS2Deisotope, filterCreator_MS2Deisotope},
     {"ETDFilter", usage_ETDFilter, filterCreator_ETDFilter},
     {"demultiplex", usage_demux, filterCreator_demux},
+    {"sonar", usage_sonar, filterCreator_sonar},
     {"chargeStatePredictor", usage_chargeStatePredictor, filterCreator_chargeStatePredictor},
     {"turbocharger", usage_chargeFromIsotope, filterCreator_chargeFromIsotope},
     {"activation", usage_activation, filterCreator_ActivationType},

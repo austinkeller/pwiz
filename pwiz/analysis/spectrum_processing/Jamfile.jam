@@ -49,6 +49,7 @@ lib pwiz_analysis_spectrum_processing_basic
         SpectrumList_3D.cpp
         SpectrumList_IonMobility.cpp
         SpectrumList_Demux.cpp
+        SpectrumList_Sonar.cpp
         MS2NoiseFilter.cpp
         MS2Deisotoper.cpp
         ThresholdFilter.cpp

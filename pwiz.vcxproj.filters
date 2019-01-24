@@ -565,6 +565,7 @@
     <ClCompile Include="pwiz\utility\misc\BinaryDataTest.cpp" />
     <ClCompile Include="pwiz_aux\msrc\utility\vendor_api\UIMF\UIMFReader.cpp" />
     <ClCompile Include="pwiz_aux\msrc\utility\vendor_api\UIMF\UIMFReaderTest.cpp" />
+    <ClCompile Include="pwiz\analysis\spectrum_processing\SpectrumList_Sonar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\boost_aux\boost\nowide\args.hpp" />
@@ -998,6 +999,7 @@
     <ClInclude Include="pwiz_tools\BiblioSpec\src\BuildParser.h" />
     <ClInclude Include="pwiz_tools\BiblioSpec\src\mzxmlParser.h" />
     <ClInclude Include="pwiz_tools\BiblioSpec\src\PwizReader.h" />
+    <ClInclude Include="pwiz\analysis\spectrum_processing\SpectrumList_Sonar.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Jamroot.jam" />
