@@ -308,7 +308,7 @@ namespace analysis {
         // Generate the IndexMapper using the chosen IPrecursorMaskCodec
         indexMapper_ = boost::make_shared<IndexMapper>(inner, *pmc_);
         // Use a SpectrumListCache since we expect to request the same spectra multiple times to extract all demux spectra before moving to the next
-        sl_ = boost::make_shared<SpectrumListCache>(inner, MemoryMRUCacheMode_MetaDataAndBinaryData, 1000);
+        sl_ = boost::make_shared<SpectrumListCache>(inner, MemoryMRUCacheMode_MetaDataAndBinaryData, 1200);
         // Add processing methods to the copy of the inner SpectrumList's data processing
         /// WARNING: It is important that this gives a string containing "Demultiplexing" in order for SpectrumWorkerThreads.cpp to handle demultiplexing properly.
         ProcessingMethod method;
