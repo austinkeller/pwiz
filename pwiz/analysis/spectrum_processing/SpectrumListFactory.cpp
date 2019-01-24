@@ -854,7 +854,7 @@ SpectrumListPtr filterCreator_sonar(const MSData& msd, const string& carg, pwiz:
 
     bal::trim(arg);
     if (!arg.empty())
-        throw runtime_error("[demultiplex] unhandled text remaining in argument string: \"" + arg + "\"");
+        throw runtime_error("[sonar] unhandled text remaining in argument string: \"" + arg + "\"");
 
     if (sonarParams.startMass <= 0 ||
         sonarParams.endMass <= 0 ||
